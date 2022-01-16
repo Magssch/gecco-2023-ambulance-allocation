@@ -1,0 +1,33 @@
+.label {
+    font-size: 10px;
+    padding: 2px 5px;
+    background: #ffffff;
+    width: 100px;
+    max-width: 100px;
+    text-align: center;
+}
+
+
+.red-label {
+    font-size: 10px;
+    padding: 2px 5px;
+    background: #e6262b;
+    text-align: center;
+    color: #ffffff;
+}
+
+.orange-label {
+    font-size: 10px;
+    padding: 2px 5px;
+    background: #e69327;
+    text-align: center;
+    color: #ffffff;
+}
+
+.green-label {
+    font-size: 10px;
+    padding: 2px 5px;
+    background: #356425;
+    text-align: center;
+    color: #ffffff;
+}

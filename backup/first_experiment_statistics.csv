@@ -1,0 +1,6 @@
+strategy,best,median,mean,std
+Random,911.06,959.38,955.29,28.25
+AllCityCenter,1325.98,1325.98,1325.98,0.0
+Uniform,913.8,913.8,913.8,0.0
+UniformRandom,886.55,901.47,900.73,8.24
+PopulationProportionate,897.63,897.63,897.63,0.0

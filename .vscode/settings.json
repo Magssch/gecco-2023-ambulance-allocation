@@ -1,0 +1,52 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.debug.settings.forceBuildBeforeLaunch": false,
+  "java.debug.settings.console": "integratedTerminal",
+  "java.debug.settings.vmArgs": "-ea",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": null,
+  "editor.tabSize": 4,
+  "java.format.settings.url": ".vscode/eclipse-java-google-style.xml",
+  "python.defaultInterpreterPath": "scripts/venv/bin/python",
+  "cSpell.words": [
+    "akershus",
+    "AURSKOG",
+    "BAERUM",
+    "BEKKESTUA",
+    "BROBEKK",
+    "EIDSVOLL",
+    "FOLLO",
+    "GRORUD",
+    "HOLAND",
+    "LORENSKOG",
+    "NITTEDAL",
+    "NORDRE",
+    "PRINSDAL",
+    "pyplot",
+    "RYEN",
+    "SENTRUM",
+    "SKEDSMOKORSET",
+    "SMESTAD",
+    "SONDRE",
+    "SSBID",
+    "ULLENSAKER",
+    "ULLEVAAL"
+  ],
+  "python.linting.flake8Enabled": true,
+  "python.linting.enabled": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  },
+  "python.analysis.extraPaths": [
+    "./scripts/proprietary_scripts/python/ferd"
+  ],
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "./scripts/proprietary_scripts/python/ferd"
+  },
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "./scripts/proprietary_scripts/python/ferd"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python"
+  }
+}

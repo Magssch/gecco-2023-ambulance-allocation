@@ -1,0 +1,31 @@
+[flake8]
+max-line-length = 120
+
+inline-quotes = "double"
+
+# complexity is measured with McGabe (bundled with Flake8)
+max-complexity = 10
+
+# used by flake8-spellcheck
+dictionaries=en_US, python, technical
+
+
+ignore =
+    E501, E731, W503
+    
+    # Ignore Bugbear line-length warning as flake8 handles this
+    B950
+
+per-file-ignores =
+    # Suppress unused imports in init-files
+    */__init__.py:F401
+
+    # Suppress flake8-bandit flagging of 'assert' in tests
+    */tests/*:S101
+
+select = ABS, B, B9, BLK, C, E, F, S, SC, T, W
+
+exclude =
+    .git,
+    __pycache__,
+    venv,
