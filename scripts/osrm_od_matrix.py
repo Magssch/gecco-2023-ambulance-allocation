@@ -71,33 +71,18 @@ class Connection:
         )
         return polyline.decode(x["routes"][0]["geometry"]), x["routes"][0]
 
-    def find_distance(origin, destination):
+    def find_distance(self, origin, destination):
         path, route = conn.route_polyline(
             (
-                (origin_lat, origin_long),
-                (destination_lat, destination_long),
+                origin,
+                destination,
             )
         )
-        easting_orig, northing_orig = latlongs_to_utm[(origin_lat, origin_long)]
-        easting_dest, northing_dest = latlongs_to_utm[
-            (destination_lat, destination_long)
-        ]
         arr = path
         if len(path) > 7:
             arr = np.array(path)
             arr = arr[np.round(np.linspace(0, len(arr) - 1, 7)).astype(int)]
             arr = arr.tolist()
-
-        origin_key = (
-            utm_to_grid_id[(easting_orig, northing_orig)]
-            if grid_origin
-            else f"_{easting_orig:.0f}_{northing_orig:.0f}"
-        )
-        destination_key = (
-            utm_to_grid_id[(easting_dest, northing_dest)]
-            if grid_destination
-            else f"_{easting_dest:.0f}_{northing_dest:.0f}"
-        )
         return (
             route["duration"],
             route["distance"],
@@ -144,49 +129,62 @@ if __name__ == "__main__":
     i = 0
 
     for (_, (origin_lat, origin_long, grid_origin)) in coordinates.iterrows():
-
-        timeseries = []
+        easting_orig, northing_orig = latlongs_to_utm[(origin_lat, origin_long)]
+        futures = {}
+        origin_key = (
+            utm_to_grid_id[(easting_orig, northing_orig)]
+            if grid_origin
+            else f"_{easting_orig:.0f}_{northing_orig:.0f}"
+        )
         with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(read_datadump, f) for f in datafiles]
-            # Unpack future.result() and flatten list:
-            timeseries = [data for future in futures for data in future.result()]
-        for (
-            _,
-            (destination_lat, destination_long, grid_destination),
-        ) in coordinates.iterrows():
-            if origin_lat == destination_lat and origin_long == destination_long:
-                continue
-            path, route = conn.route_polyline(
-                (
+            for (
+                _,
+                (destination_lat, destination_long, grid_destination),
+            ) in coordinates.iterrows():
+                if origin_lat == destination_lat and origin_long == destination_long:
+                    continue
+                easting_dest, northing_dest = latlongs_to_utm[
+                    (destination_lat, destination_long)
+                ]
+                destination_key = (
+                    utm_to_grid_id[(easting_dest, northing_dest)]
+                    if grid_destination
+                    else f"_{easting_dest:.0f}_{northing_dest:.0f}"
+                )
+                futures[destination_key] = executor.submit(
+                    conn.find_distance,
                     (origin_lat, origin_long),
                     (destination_lat, destination_long),
                 )
-            )
-            easting_orig, northing_orig = latlongs_to_utm[(origin_lat, origin_long)]
-            easting_dest, northing_dest = latlongs_to_utm[
-                (destination_lat, destination_long)
-            ]
-            arr = path
-            if len(path) > 7:
-                arr = np.array(path)
-                arr = arr[np.round(np.linspace(0, len(arr) - 1, 7)).astype(int)]
-                arr = arr.tolist()
+            od[origin_key] = {
+                destination: future.result() for destination, future in futures.items()
+            }
+            # for (
+            #     _,
+            #     (destination_lat, destination_long, grid_destination),
+            # ) in coordinates.iterrows():
+            # if origin_lat == destination_lat and origin_long == destination_long:
+            #     continue
 
-            origin_key = (
-                utm_to_grid_id[(easting_orig, northing_orig)]
-                if grid_origin
-                else f"_{easting_orig:.0f}_{northing_orig:.0f}"
-            )
-            destination_key = (
-                utm_to_grid_id[(easting_dest, northing_dest)]
-                if grid_destination
-                else f"_{easting_dest:.0f}_{northing_dest:.0f}"
-            )
-            od[origin_key][destination_key] = (
-                route["duration"],
-                route["distance"],
-                arr,
-            )
+            # easting_orig, northing_orig = latlongs_to_utm[(origin_lat, origin_long)]
+            # easting_dest, northing_dest = latlongs_to_utm[
+            #     (destination_lat, destination_long)
+            # ]
+            # origin_key = (
+            #     utm_to_grid_id[(easting_orig, northing_orig)]
+            #     if grid_origin
+            #     else f"_{easting_orig:.0f}_{northing_orig:.0f}"
+            # )
+            # destination_key = (
+            #     utm_to_grid_id[(easting_dest, northing_dest)]
+            #     if grid_destination
+            #     else f"_{easting_dest:.0f}_{northing_dest:.0f}"
+            # )
+            # od[origin_key][destination_key] = (
+            #     route["duration"],
+            #     route["distance"],
+            #     arr,
+            # )
         i += 1
         print(f"{i} of {n} coordinate rows processed")
         # if i == 1:
