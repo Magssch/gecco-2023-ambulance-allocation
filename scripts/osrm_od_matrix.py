@@ -1,5 +1,6 @@
 import json
 from concurrent.futures import ThreadPoolExecutor
+from time import time
 from typing import Any
 
 import numpy as np
@@ -129,6 +130,7 @@ if __name__ == "__main__":
     i = 0
 
     for (_, (origin_lat, origin_long, grid_origin)) in coordinates.iterrows():
+        t1 = time()
         easting_orig, northing_orig = latlongs_to_utm[(origin_lat, origin_long)]
         futures = {}
         origin_key = (
@@ -186,7 +188,11 @@ if __name__ == "__main__":
             #     arr,
             # )
         i += 1
-        print(f"{i} of {n} coordinate rows processed")
+        t2 = time()
+        print(
+            f"{i} of {n} coordinate rows processed",
+            f"- Completed last step in {(t2-t1):.4f}s",
+        )
         # if i == 1:
     with open(f"scripts/data/od_matrix.json", "w") as f:
         json.dump(od, f, indent=2)
