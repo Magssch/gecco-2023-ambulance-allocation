@@ -109,7 +109,7 @@ if __name__ == "__main__":
         (coors["lat"], coors["long"]): latitude_longitude_to_utm(
             coors["lat"], coors["long"]
         )
-        for (_, coors) in grid_coordinates.iterrows()
+        for (_, coors) in coordinates.iterrows()
     }
     utm_to_grid_id = {
         (easting, northing): utm_to_ssb_grid_id(easting, northing)
