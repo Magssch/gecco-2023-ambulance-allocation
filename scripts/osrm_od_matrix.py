@@ -161,32 +161,6 @@ if __name__ == "__main__":
             od[origin_key] = {
                 destination: future.result() for destination, future in futures.items()
             }
-            # for (
-            #     _,
-            #     (destination_lat, destination_long, grid_destination),
-            # ) in coordinates.iterrows():
-            # if origin_lat == destination_lat and origin_long == destination_long:
-            #     continue
-
-            # easting_orig, northing_orig = latlongs_to_utm[(origin_lat, origin_long)]
-            # easting_dest, northing_dest = latlongs_to_utm[
-            #     (destination_lat, destination_long)
-            # ]
-            # origin_key = (
-            #     utm_to_grid_id[(easting_orig, northing_orig)]
-            #     if grid_origin
-            #     else f"_{easting_orig:.0f}_{northing_orig:.0f}"
-            # )
-            # destination_key = (
-            #     utm_to_grid_id[(easting_dest, northing_dest)]
-            #     if grid_destination
-            #     else f"_{easting_dest:.0f}_{northing_dest:.0f}"
-            # )
-            # od[origin_key][destination_key] = (
-            #     route["duration"],
-            #     route["distance"],
-            #     arr,
-            # )
         i += 1
         t2 = time()
         print(
