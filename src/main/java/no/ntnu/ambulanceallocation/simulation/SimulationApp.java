@@ -15,10 +15,10 @@
 */
 package no.ntnu.ambulanceallocation.simulation;
 
-import com.sothawo.mapjfx.Projection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sothawo.mapjfx.Projection;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

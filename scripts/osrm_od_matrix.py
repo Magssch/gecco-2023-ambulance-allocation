@@ -1,4 +1,5 @@
 import json
+import math
 from concurrent.futures import ThreadPoolExecutor
 from time import time
 from typing import Any
@@ -7,7 +8,11 @@ import numpy as np
 import pandas as pd
 import polyline
 import requests
-from coordinate_converter import latitude_longitude_to_utm, utm_to_ssb_grid_id
+from coordinate_converter import (
+    latitude_longitude_to_utm,
+    snap_utm_to_ssb_grid,
+    utm_to_ssb_grid_id,
+)
 
 
 def format_coords(coords: np.ndarray) -> str:
@@ -72,48 +77,69 @@ class Connection:
         )
         return polyline.decode(x["routes"][0]["geometry"]), x["routes"][0]
 
-    def find_distance(self, origin, destination):
-        path, route = conn.route_polyline(
-            (
-                origin,
-                destination,
+    def find_distance(self, origin, destination, find_path=False):
+        if find_path:
+            path, route = conn.route_polyline(
+                (
+                    origin,
+                    destination,
+                )
             )
-        )
-        arr = path
-        if len(path) > 7:
-            arr = np.array(path)
-            arr = arr[np.round(np.linspace(0, len(arr) - 1, 7)).astype(int)]
-            arr = arr.tolist()
-        return (
-            route["duration"],
-            route["distance"],
-            arr,
-        )
+            return (
+                route["duration"],
+                route["distance"],
+                path,
+            )
+        else:
+            route = conn.route_dt(
+                (
+                    origin,
+                    destination,
+                )
+            )
+            return (
+                route["duration"],
+                route["distance"],
+            )
 
 
 if __name__ == "__main__":
     conn = Connection(host="localhost", port="5001")
 
     grid_coordinates = pd.read_csv("scripts/data/grid_centroids.csv")
+    utm_and_latlong = pd.read_csv("scripts/data/utm_and_latlong.csv")
     grid_coordinates["grid"] = True
+    grid_coordinates["is_base_station"] = False
     base_station_coordinates = pd.read_csv("scripts/data/base_station_coordinates.csv")
+    hospital_coordinates = pd.read_csv("scripts/data/hospital_coordinates.csv")
     base_station_coordinates["grid"] = False
+    base_station_coordinates["is_base_station"] = True
+    hospital_coordinates["grid"] = False
+    hospital_coordinates["is_base_station"] = False
 
     coordinates = pd.concat(
         [
-            grid_coordinates[["lat", "long", "grid"]],
-            base_station_coordinates[["lat", "long", "grid"]],
+            grid_coordinates[["lat", "long", "grid", "is_base_station"]],
+            base_station_coordinates[["lat", "long", "grid", "is_base_station"]],
+            hospital_coordinates[["lat", "long", "grid", "is_base_station"]],
         ]
     )
 
     latlongs_to_utm = {
-        (coors["lat"], coors["long"]): latitude_longitude_to_utm(
-            coors["lat"], coors["long"]
-        )
-        for (_, coors) in coordinates.iterrows()
+        **{
+            (coors[2], coors[3]): (coors[0], coors[1])
+            for (_, coors) in utm_and_latlong.iterrows()
+        },
+        **{
+            (coors["lat"], coors["long"]): latitude_longitude_to_utm(
+                coors["lat"], coors["long"]
+            )
+            for (_, coors) in coordinates.iterrows()
+        },
     }
+
     utm_to_grid_id = {
-        (easting, northing): utm_to_ssb_grid_id(easting, northing)
+        (easting, northing): str(utm_to_ssb_grid_id(easting, northing))
         for easting, northing in latlongs_to_utm.values()
     }
 
@@ -122,26 +148,57 @@ if __name__ == "__main__":
         for (_, coors) in grid_coordinates.iterrows()
     }
 
+    incident_location_ids = set(od.keys())
+    incident_location_coords = [
+        (coors["lat"], coors["long"]) for (_, coors) in grid_coordinates.iterrows()
+    ]
+
     for (_, coors) in base_station_coordinates.iterrows():
         easting, northing = latlongs_to_utm[(coors["lat"], coors["long"])]
         od[f"_{easting:.0f}_{northing:.0f}"] = {}
 
-    n = len(grid_coordinates) + len(base_station_coordinates)
+    for (_, coors) in hospital_coordinates.iterrows():
+        easting, northing = latlongs_to_utm[(coors["lat"], coors["long"])]
+        od[f"_{easting:.0f}_{northing:.0f}"] = {}
+
+    n = (
+        len(grid_coordinates)
+        + len(base_station_coordinates)
+        + len(hospital_coordinates)
+    )
     i = 0
 
-    for (_, (origin_lat, origin_long, grid_origin)) in coordinates.iterrows():
-        t1 = time()
-        easting_orig, northing_orig = latlongs_to_utm[(origin_lat, origin_long)]
-        futures = {}
-        origin_key = (
-            utm_to_grid_id[(easting_orig, northing_orig)]
-            if grid_origin
-            else f"_{easting_orig:.0f}_{northing_orig:.0f}"
-        )
-        with ThreadPoolExecutor() as executor:
+    extra_grids = {}
+
+    # Read cached OD matrix
+    od_cached = {}
+    with open(f"scripts/data/od_matrix2.json", "r") as f1:
+        od_cached = json.load(f1)
+        for k, v in od_cached.items():
+            od[k] = v
+
+    with ThreadPoolExecutor() as executor:
+        for (
+            _,
+            (origin_lat, origin_long, grid_origin, origin_is_base_station),
+        ) in coordinates.iterrows():
+            t1 = time()
+            easting_orig, northing_orig = latlongs_to_utm[(origin_lat, origin_long)]
+            futures = {}
+            origin_key = (
+                utm_to_grid_id[(easting_orig, northing_orig)]
+                if grid_origin
+                else f"_{easting_orig:.0f}_{northing_orig:.0f}"
+            )
+            g = 0
             for (
                 _,
-                (destination_lat, destination_long, grid_destination),
+                (
+                    destination_lat,
+                    destination_long,
+                    grid_destination,
+                    destination_is_base_station,
+                ),
             ) in coordinates.iterrows():
                 if origin_lat == destination_lat and origin_long == destination_long:
                     continue
@@ -153,21 +210,69 @@ if __name__ == "__main__":
                     if grid_destination
                     else f"_{easting_dest:.0f}_{northing_dest:.0f}"
                 )
-                futures[destination_key] = executor.submit(
+                if (
+                    not od[origin_key]
+                    or destination_key not in od[origin_key]
+                    or not od[origin_key][destination_key]
+                ):
+                    futures[destination_key] = executor.submit(
+                        conn.find_distance,
+                        (origin_lat, origin_long),
+                        (destination_lat, destination_long),
+                        find_path=destination_is_base_station,
+                    )
+                    g += 1
+            for destination, future in futures.items():
+                od[origin_key][destination] = future.result()
+
+            for destination in od[origin_key]:
+                if len(od[origin_key][destination]) > 2 and not isinstance(
+                    od[origin_key][destination][2][0], int
+                ):
+                    for j, path_point in enumerate(od[origin_key][destination][2]):
+                        grid_id = utm_to_ssb_grid_id(
+                            *snap_utm_to_ssb_grid(
+                                latitude_longitude_to_utm(*path_point)
+                            )
+                        )
+                        od[origin_key][destination][2][j] = grid_id
+                        if str(grid_id) not in od and str(grid_id) not in extra_grids:
+                            extra_grids[grid_id] = path_point
+            i += 1
+            t2 = time()
+            print("--------------------")
+            print(
+                "Processed origin:",
+                origin_key,
+                " - number of destinations that was not cached:",
+                g,
+            )
+            print(
+                f"{i} of {n + len(extra_grids)} coordinate rows processed",
+                f"- Completed in {(t2-t1):.4f}s",
+            )
+            print("Extra grid IDs to find routes for: ", len(extra_grids))
+
+        print("Now finding extra grid IDs")
+        k = 1
+        for grid_id, coords in extra_grids.items():
+            print("Find paths from: ", grid_id, k, "of", len(extra_grids))
+            futures = {}
+            for (
+                destination_grid_id,
+                desintation_coords,
+            ) in zip(incident_location_ids, incident_location_coords):
+                futures[destination_grid_id] = executor.submit(
                     conn.find_distance,
-                    (origin_lat, origin_long),
-                    (destination_lat, destination_long),
+                    (coords[0], coords[1]),
+                    (desintation_coords[0], desintation_coords[1]),
+                    find_path=False,
                 )
-            od[origin_key] = {
+            od[grid_id] = {
                 destination: future.result() for destination, future in futures.items()
             }
-        i += 1
-        t2 = time()
-        print(
-            f"{i} of {n} coordinate rows processed",
-            f"- Completed last step in {(t2-t1):.4f}s",
-        )
-        # if i == 1:
-    with open(f"scripts/data/od_matrix.json", "w") as f:
-        json.dump(od, f, indent=2)
-    # exit(1)
+            k += 1
+
+    with open(f"scripts/data/od_matrix3.json", "w") as f2:
+        json.dump(od, f2, indent=2)
+        # exit(1)

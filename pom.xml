@@ -12,10 +12,10 @@
   <url>http://www.example.com</url>
 
   <properties>
-    <java.version>17</java.version>
+    <java.version>19</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>19</maven.compiler.source>
+    <maven.compiler.target>19</maven.compiler.target>
     <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     <buildTimestamp>${maven.build.timestamp}</buildTimestamp>
     <appassembler.directory>simulation</appassembler.directory>
@@ -60,11 +60,11 @@
       <version>0.9.3</version>
     </dependency>
 
-    <!-- JSON -->
+    <!-- GSON -->
     <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20211205</version>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.10</version>
     </dependency>
   </dependencies>
 
@@ -123,7 +123,7 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.0</version>
           <configuration>
-            <release>17</release>
+            <release>19</release>
             <compilerArgs>--enable-preview</compilerArgs>
           </configuration>
         </plugin>
@@ -159,8 +159,10 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>17</source>
-          <target>17</target>
+          <source>19</source>
+          <target>19</target>
+          <meminitial>4096m</meminitial>
+          <maxmem>8192m</maxmem>
           <compilerArgs>--enable-preview</compilerArgs>
         </configuration>
       </plugin>

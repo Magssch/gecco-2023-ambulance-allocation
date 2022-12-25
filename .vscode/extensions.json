@@ -1,3 +1,5 @@
 {
-  "recommendations": ["vscjava.vscode-java-pack", "ms-ossdata.vscode-postgresql"]
+  "recommendations": [
+    "vscjava.vscode-java-pack"
+  ]
 }

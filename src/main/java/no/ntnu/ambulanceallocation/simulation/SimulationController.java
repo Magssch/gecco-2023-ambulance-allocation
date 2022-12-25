@@ -34,6 +34,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sothawo.mapjfx.Configuration;
 import com.sothawo.mapjfx.Coordinate;
 import com.sothawo.mapjfx.CoordinateLine;
@@ -46,9 +49,6 @@ import com.sothawo.mapjfx.Projection;
 import com.sothawo.mapjfx.WMSParam;
 import com.sothawo.mapjfx.XYZParam;
 import com.sothawo.mapjfx.offline.OfflineCache;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javafx.animation.Transition;
 import javafx.application.Platform;
@@ -318,7 +318,7 @@ public class SimulationController {
                 synchronized (ambulanceMarkers) {
                     ambulanceList.forEach(ambulance -> {
                         Coordinate coordinate = utmToLatLongMap
-                                .get(ambulance.getCurrentLocationVisualized(currentTimeInternal));
+                                .get(ambulance.getCurrentLocationInteractive(currentTimeInternal));
                         Marker marker = ambulanceMarkers.get(ambulance);
                         // MapLabel markerLabel = marker.getMapLabel().get();
 
@@ -365,7 +365,7 @@ public class SimulationController {
                             destinationLines.put(ambulance,
                                     new CoordinateLine(ambulanceDestination,
                                             utmToLatLongMap.get(ambulance
-                                                    .getCurrentLocationVisualized(currentTimeInternal)))
+                                                    .getCurrentLocationInteractive(currentTimeInternal)))
                                             .setColor(color)
                                             .setVisible(checkShowPathLines.isSelected()));
                             mapView.addCoordinateLine(destinationLines.get(ambulance));
@@ -398,7 +398,7 @@ public class SimulationController {
             } else {
                 for (Ambulance ambulance : ambulanceList) {
                     Coordinate coordinates = utmToLatLongMap
-                            .get(ambulance.getCurrentLocationVisualized(currentTimeInternal));
+                            .get(ambulance.getCurrentLocationInteractive(currentTimeInternal));
                     Marker marker = new Marker(ambulanceIcon, -15, -15).setPosition(coordinates)
                             .setVisible(checkShowAmbulances.isSelected());
                     ambulanceMarkers.put(ambulance, marker);
@@ -553,7 +553,7 @@ public class SimulationController {
         });
 
         logger.debug("Reading UTM to LatLong conversion map");
-        readCSVThenParse("grid_coordinates.csv", values -> {
+        readCSVThenParse("utm_and_latlong.csv", values -> {
             Coordinate coordinate = new Coordinate(Double.valueOf(values[2]), Double.valueOf(values[3]));
             utmToLatLongMap.put(new no.ntnu.ambulanceallocation.simulation.grid.Coordinate(Integer.valueOf(values[0]),
                     Integer.valueOf(values[1])), coordinate);
@@ -561,6 +561,10 @@ public class SimulationController {
 
         DistanceIO.uniqueGridCoordinates.forEach(utmCoordinate -> {
             Coordinate coordinate = utmToLatLongMap.get(utmCoordinate);
+            if (coordinate == null) {
+                logger.error("No coordinate found for UTM coordinate " + utmCoordinate);
+                return;
+            }
             gridCentroidCirclesList.add(new MapCircle(coordinate, 100)
                     .setFillColor(Color.web("#000000", 0.4))
                     .setColor(Color.TRANSPARENT)

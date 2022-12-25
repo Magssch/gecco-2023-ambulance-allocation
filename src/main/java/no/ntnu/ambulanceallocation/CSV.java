@@ -1,11 +1,16 @@
 package no.ntnu.ambulanceallocation;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CSV {
 
@@ -63,6 +68,14 @@ public class CSV {
                 .stream()
                 .map(this::escapeSpecialCharacters)
                 .collect(Collectors.joining(","));
+    }
+
+    public static void readCSVThenParse(String fileName, Consumer<String[]> consumer)
+            throws IOException, NumberFormatException {
+
+        Stream<String> lines = new BufferedReader(
+                new InputStreamReader(CSV.class.getResourceAsStream(fileName), StandardCharsets.UTF_8)).lines();
+        lines.map(line -> line.split(",")).forEach(consumer);
     }
 
 }

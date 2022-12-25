@@ -4,7 +4,7 @@ module ambulanceallocation {
     requires javafx.fxml;
     requires javafx.graphics;
     requires org.slf4j;
-    requires org.json;
+    requires com.google.gson;
 
     opens no.ntnu.ambulanceallocation.simulation to javafx.fxml, javafx.graphics;
 }

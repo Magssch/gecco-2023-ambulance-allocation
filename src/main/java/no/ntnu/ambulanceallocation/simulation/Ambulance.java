@@ -22,8 +22,10 @@ public class Ambulance {
     private final BaseStation baseStation;
 
     private Coordinate destination = null;
-    private int timeToDestination = 0;
+    private int startTimeToDestination = 0;
+    private int currentTimeToDestination = 0;
     private Coordinate currentLocation;
+    private int currentLocationIndex = 0;
     private Coordinate hospitalLocation = null;
     private boolean isOffDuty = true;
 
@@ -103,13 +105,16 @@ public class Ambulance {
         destination = baseStation.getCoordinate();
         travelStartTime = currentGlocalTime;
         originatingLocation = currentLocation;
-        timeToDestination = currentLocation.timeTo(destination);
+        currentLocationIndex = 0;
+        startTimeToDestination = currentLocation.timeTo(destination);
+        currentTimeToDestination = currentLocation.timeTo(destination);
     }
 
     public void dispatch(Incident incident) {
         this.incident = incident;
         travelStartTime = currentGlocalTime;
         originatingLocation = currentLocation;
+        startTimeToDestination = originatingLocation.timeTo(destination);
         destination = new Coordinate(incident.getLocation());
     }
 
@@ -119,7 +124,7 @@ public class Ambulance {
     }
 
     // Only used for visualization
-    public Coordinate getCurrentLocationVisualized(LocalDateTime currentTime) {
+    public Coordinate getCurrentLocationInteractive(LocalDateTime currentTime) {
         if (isAvailable()) {
             return currentLocation;
         }
@@ -128,43 +133,39 @@ public class Ambulance {
         }
         int elapsedTime = (int) ChronoUnit.SECONDS.between(travelStartTime, currentTime);
         int originTimeToDestination = originatingLocation.timeTo(destination);
-        if (elapsedTime >= originTimeToDestination) {
-            return destination;
-        } else {
-            int timeDelta = originTimeToDestination - elapsedTime;
-            List<Coordinate> closeNeighbors = currentLocation.getNeighbors().stream()
-                    .sorted(Comparator
-                            .comparingInt(c -> Math.abs(c.getNearbyAverageTravelTimeTo(destination) - timeDelta)))
-                    .toList();
-            for (Coordinate closeNeighbor : closeNeighbors) {
-                if (Math.abs(
-                        closeNeighbor.getNearbyAverageTravelTimeTo(destination) - timeDelta) < Math
-                                .abs(currentLocation.timeTo(destination) - timeDelta)) {
-                    return closeNeighbor;
+        if (originatingLocation.pathTo(destination) != null) {
+            Coordinate[] path = originatingLocation.pathTo(destination);
+            for (int i = 0; i < path.length; i++) {
+                if (originatingLocation.timeTo(path[i]) <= elapsedTime) {
+                    return path[i];
+                }
+            }
+        } else if (destination.pathTo(originatingLocation) != null) {
+            Coordinate[] path = destination.pathTo(originatingLocation);
+            for (int i = path.length - 1; i >= 0; i--) {
+                if (originatingLocation.timeTo(path[i]) <= elapsedTime) {
+                    return path[i];
                 }
             }
         }
-        return currentLocation;
     }
 
     public void updateLocation(int timePeriod) {
-        timeToDestination -= timePeriod * 60;
-        if (timeToDestination <= 0) {
+        currentTimeToDestination -= timePeriod * 60;
+        if (currentTimeToDestination <= 0) {
             currentLocation = destination;
-            timeToDestination = 0;
+            currentTimeToDestination = 0;
         } else {
-            int previousTimeToDestination = currentLocation.timeTo(destination);
-            List<Coordinate> closeNeighbors = currentLocation.getNeighbors().stream()
-                    .sorted(Comparator.comparingInt(c -> Math.abs(c.timeTo(destination) - timeToDestination)))
-                    .toList();
-            for (Coordinate closeNeighbor : closeNeighbors) {
-                if (Math.abs(closeNeighbor.timeTo(destination) - timeToDestination) < Math
-                        .abs(previousTimeToDestination - timeToDestination)) {
-                    currentLocation = closeNeighbor;
-                    return;
-                }
+            Coordinate[] path = originatingLocation.pathTo(destination);
+            // TODO: What if we havent calculated time to path cell?
+            while (currentLocationIndex < path.length - 1
+                    && path[currentLocationIndex + 1].timeTo(destination) > currentTimeToDestination) {
+                currentLocationIndex++;
             }
+            currentLocation = path[currentLocationIndex];
         }
+    }
+
     }
 
     public boolean endOfJourney() {

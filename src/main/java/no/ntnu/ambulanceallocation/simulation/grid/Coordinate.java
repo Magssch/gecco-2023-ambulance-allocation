@@ -2,8 +2,6 @@ package no.ntnu.ambulanceallocation.simulation.grid;
 
 import java.util.List;
 
-import no.ntnu.ambulanceallocation.Parameters;
-
 public record Coordinate(int x, int y, long id) {
 
     private static final double FALSE_EASTING = 2_000_000.0;
@@ -21,8 +19,12 @@ public record Coordinate(int x, int y, long id) {
         this(coordinate.x(), coordinate.y(), coordinate.id());
     }
 
+    public Coordinate[] pathTo(Coordinate other) {
+        return DistanceIO.getRoute(this, other).path();
+    }
+
     public int timeTo(Coordinate other) {
-        return (int) Math.round(DistanceIO.getDistance(this, other));
+        return (int) Math.round(DistanceIO.getRoute(this, other).distance());
     }
 
     public double euclideanDistanceTo(Coordinate other) {
