@@ -42,9 +42,9 @@ public final class DistanceIO {
 
     public static OneToManyRoutes getRoute(Coordinate from, Coordinate to) {
         // TODO: What if origin and destination are the same?
-        if (from.equals(to)) {
-            return new OneToManyRoutes(from, to, 0, null);
-        }
+        // if (from.equals(to)) {
+        // return new OneToManyRoutes(from, to, 0, null);
+        // }
         if (!distances.containsKey(new Tuple<>(from, to))) {
             logger.info("Failed to find distance from {} to {}", from, to);
             return null;
