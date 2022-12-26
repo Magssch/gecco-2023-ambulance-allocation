@@ -251,3 +251,4 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 scripts/data/uninterpolatable_pairs.json
 scripts/data/od_nearest_neighbors.json
+*od_matrix*

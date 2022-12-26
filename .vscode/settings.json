@@ -2,7 +2,8 @@
   "java.configuration.updateBuildConfiguration": "automatic",
   "java.debug.settings.forceBuildBeforeLaunch": false,
   "java.debug.settings.console": "integratedTerminal",
-  "java.debug.settings.vmArgs": "-ea",
+  "java.debug.settings.vmArgs": "-ea -Xms4g -Xmx12g",
+  "java.jdt.ls.vmargs": "-ea -Xms4g -Xmx12g",
   "editor.formatOnSave": true,
   "editor.defaultFormatter": null,
   "editor.tabSize": 4,
@@ -48,5 +49,5 @@
   },
   "[python]": {
     "editor.defaultFormatter": "ms-python.python"
-  }
+  },
 }
