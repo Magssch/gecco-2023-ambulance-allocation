@@ -19,6 +19,10 @@ public record Coordinate(int x, int y, long id) {
         this(coordinate.x(), coordinate.y(), coordinate.id());
     }
 
+    public boolean routeExists(Coordinate other) {
+        return DistanceIO.getRoute(this, other) != null;
+    }
+
     public Coordinate[] pathTo(Coordinate other) {
         return DistanceIO.getRoute(this, other).path();
     }

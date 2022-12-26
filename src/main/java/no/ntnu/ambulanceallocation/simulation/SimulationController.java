@@ -68,6 +68,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+import no.ntnu.ambulanceallocation.CSV;
 import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.Allocation;
 import no.ntnu.ambulanceallocation.optimization.initializer.AllCityCenter;
@@ -522,7 +523,7 @@ public class SimulationController {
         incidentCircleList.forEach(mapView::addMapCircle);
     }
 
-    public SimulationController() {
+    public SimulationController() throws NumberFormatException, IOException {
         // logger.debug("Prefetching incidents and distances for simulation");
         // DistanceIO distances = new DistanceIO();
         // IncidentIO incidents = new IncidentIO();
@@ -553,10 +554,12 @@ public class SimulationController {
         });
 
         logger.debug("Reading UTM to LatLong conversion map");
-        readCSVThenParse("utm_and_latlong.csv", values -> {
+        CSV.readCSVThenParse("utm_and_latlong.csv", values -> {
             Coordinate coordinate = new Coordinate(Double.valueOf(values[2]), Double.valueOf(values[3]));
-            utmToLatLongMap.put(new no.ntnu.ambulanceallocation.simulation.grid.Coordinate(Integer.valueOf(values[0]),
-                    Integer.valueOf(values[1])), coordinate);
+            utmToLatLongMap.put(
+                    new no.ntnu.ambulanceallocation.simulation.grid.Coordinate(Double.valueOf(values[0]).intValue(),
+                            Double.valueOf(values[1]).intValue()),
+                    coordinate);
         });
 
         DistanceIO.uniqueGridCoordinates.forEach(utmCoordinate -> {

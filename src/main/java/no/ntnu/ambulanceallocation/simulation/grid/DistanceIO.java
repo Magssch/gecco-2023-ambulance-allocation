@@ -26,35 +26,35 @@ public final class DistanceIO {
 
     public static final String distancesFilePath = new File("src/main/resources/od.json")
             .getAbsolutePath();
-    // public static final String neighborsFilePath = new
-    // File("src/main/resources/od_nearest_neighbors.json")
-    // .getAbsolutePath();
     public static final Set<Coordinate> uniqueGridCoordinates = new HashSet<>();
     public static final Map<Coordinate, List<Coordinate>> coordinateNeighbors = new HashMap<>();
     public static final Map<Tuple<Coordinate>, OneToManyRoutes> distances = new HashMap<>();
     public static final Map<String, Coordinate> coordinateStringCache = new HashMap<>();
     public static final Map<Long, Coordinate> coordinateLongCache = new HashMap<>();
     private static final Logger logger = LoggerFactory.getLogger(DistanceIO.class);
-    private static final Map<Tuple<Double>, Coordinate> utmToLatLongMap = new HashMap<>();
+    public static final Map<Tuple<Double>, Coordinate> utmToLatLongMap = new HashMap<>();
 
     static {
         loadUTMToLatLongMap();
         loadDistancesFromFile();
-        // loadNearestNeighborsFromFile();
         coordinateStringCache.clear();
     }
 
     public static OneToManyRoutes getRoute(Coordinate from, Coordinate to) {
-        // if (!distances.containsKey(new Tuple<>(from, to))) {
-        // logger.info("Failed to find distance from {} to {}", from, to);
-        // return 60.0;
-        // }
+        // TODO: What if origin and destination are the same?
+        if (from.equals(to)) {
+            return new OneToManyRoutes(from, to, 0, null);
+        }
+        if (!distances.containsKey(new Tuple<>(from, to))) {
+            logger.info("Failed to find distance from {} to {}", from, to);
+            return null;
+        }
         return distances.get(new Tuple<>(from, to));
     }
 
     public static void loadUTMToLatLongMap() {
         try {
-            CSV.readCSVThenParse("grid_coordinates.csv", values -> {
+            CSV.readCSVThenParse("utm_and_latlong.csv", values -> {
                 Coordinate coordinate = new Coordinate(Integer.valueOf(values[0]), Integer.valueOf(values[1]));
                 utmToLatLongMap.put(new Tuple<>(Double.valueOf(values[2]), Double.valueOf(values[3])), coordinate);
             });

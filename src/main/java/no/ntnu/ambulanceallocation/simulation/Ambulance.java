@@ -12,8 +12,6 @@ import no.ntnu.ambulanceallocation.simulation.incident.Incident;
 
 public class Ambulance {
 
-    private final static double CONVERSION_FACTOR = 3.6;
-
     // Only used for visualization
     private static LocalDateTime currentGlocalTime;
     private LocalDateTime travelStartTime;
@@ -22,7 +20,6 @@ public class Ambulance {
     private final BaseStation baseStation;
 
     private Coordinate destination = null;
-    private int startTimeToDestination = 0;
     private int currentTimeToDestination = 0;
     private Coordinate currentLocation;
     private int currentLocationIndex = 0;
@@ -106,7 +103,6 @@ public class Ambulance {
         travelStartTime = currentGlocalTime;
         originatingLocation = currentLocation;
         currentLocationIndex = 0;
-        startTimeToDestination = currentLocation.timeTo(destination);
         currentTimeToDestination = currentLocation.timeTo(destination);
     }
 
@@ -114,7 +110,7 @@ public class Ambulance {
         this.incident = incident;
         travelStartTime = currentGlocalTime;
         originatingLocation = currentLocation;
-        startTimeToDestination = originatingLocation.timeTo(destination);
+        currentLocationIndex = 0;
         destination = new Coordinate(incident.getLocation());
     }
 
@@ -132,22 +128,25 @@ public class Ambulance {
             return currentLocation;
         }
         int elapsedTime = (int) ChronoUnit.SECONDS.between(travelStartTime, currentTime);
-        int originTimeToDestination = originatingLocation.timeTo(destination);
-        if (originatingLocation.pathTo(destination) != null) {
+        if (originatingLocation.timeTo(destination) - elapsedTime <= 0) {
+            return destination;
+        }
+        if (destination.routeExists(originatingLocation) && originatingLocation.pathTo(destination) != null) {
             Coordinate[] path = originatingLocation.pathTo(destination);
             for (int i = 0; i < path.length; i++) {
                 if (originatingLocation.timeTo(path[i]) <= elapsedTime) {
                     return path[i];
                 }
             }
-        } else if (destination.pathTo(originatingLocation) != null) {
+        } else if (destination.routeExists(originatingLocation) && destination.pathTo(originatingLocation) != null) {
             Coordinate[] path = destination.pathTo(originatingLocation);
             for (int i = path.length - 1; i >= 0; i--) {
-                if (originatingLocation.timeTo(path[i]) <= elapsedTime) {
+                if (path[i].timeTo(originatingLocation) <= elapsedTime) {
                     return path[i];
                 }
             }
         }
+        return currentLocation;
     }
 
     public void updateLocation(int timePeriod) {
@@ -157,15 +156,14 @@ public class Ambulance {
             currentTimeToDestination = 0;
         } else {
             Coordinate[] path = originatingLocation.pathTo(destination);
-            // TODO: What if we havent calculated time to path cell?
-            while (currentLocationIndex < path.length - 1
-                    && path[currentLocationIndex + 1].timeTo(destination) > currentTimeToDestination) {
-                currentLocationIndex++;
+            if (path != null) {
+                while (currentLocationIndex < path.length - 1
+                        && path[currentLocationIndex + 1].timeTo(destination) > currentTimeToDestination) {
+                    currentLocationIndex++;
+                }
+                currentLocation = path[currentLocationIndex];
             }
-            currentLocation = path[currentLocationIndex];
         }
-    }
-
     }
 
     public boolean endOfJourney() {

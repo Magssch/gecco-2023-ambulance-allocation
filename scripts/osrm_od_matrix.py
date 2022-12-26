@@ -124,7 +124,6 @@ if __name__ == "__main__":
             hospital_coordinates[["lat", "long", "grid", "is_base_station"]],
         ]
     )
-
     latlongs_to_utm = {
         **{
             (coors[2], coors[3]): (coors[0], coors[1])
@@ -148,11 +147,6 @@ if __name__ == "__main__":
         for (_, coors) in grid_coordinates.iterrows()
     }
 
-    incident_location_ids = set(od.keys())
-    incident_location_coords = [
-        (coors["lat"], coors["long"]) for (_, coors) in grid_coordinates.iterrows()
-    ]
-
     for (_, coors) in base_station_coordinates.iterrows():
         easting, northing = latlongs_to_utm[(coors["lat"], coors["long"])]
         od[f"_{easting:.0f}_{northing:.0f}"] = {}
@@ -160,6 +154,11 @@ if __name__ == "__main__":
     for (_, coors) in hospital_coordinates.iterrows():
         easting, northing = latlongs_to_utm[(coors["lat"], coors["long"])]
         od[f"_{easting:.0f}_{northing:.0f}"] = {}
+
+    unique_grid_ids = set(od.keys())
+    unique_grid_coords = [
+        (coors["lat"], coors["long"]) for (_, coors) in grid_coordinates.iterrows()
+    ]
 
     n = (
         len(grid_coordinates)
@@ -172,7 +171,7 @@ if __name__ == "__main__":
 
     # Read cached OD matrix
     od_cached = {}
-    with open(f"scripts/data/od_matrix2.json", "r") as f1:
+    with open(f"scripts/data/od_matrix3.json", "r") as f1:
         od_cached = json.load(f1)
         for k, v in od_cached.items():
             od[k] = v
@@ -210,7 +209,7 @@ if __name__ == "__main__":
                     if grid_destination
                     else f"_{easting_dest:.0f}_{northing_dest:.0f}"
                 )
-                if (
+                if destination_is_base_station or (
                     not od[origin_key]
                     or destination_key not in od[origin_key]
                     or not od[origin_key][destination_key]
@@ -236,8 +235,11 @@ if __name__ == "__main__":
                             )
                         )
                         od[origin_key][destination][2][j] = grid_id
-                        if str(grid_id) not in od and str(grid_id) not in extra_grids:
-                            extra_grids[grid_id] = path_point
+                        if (
+                            str(grid_id) not in od
+                            or len(od[str(grid_id)]) < len(unique_grid_ids) - 1
+                        ) and str(grid_id) not in extra_grids:
+                            extra_grids[str(grid_id)] = path_point
             i += 1
             t2 = time()
             print("--------------------")
@@ -255,24 +257,27 @@ if __name__ == "__main__":
 
         print("Now finding extra grid IDs")
         k = 1
+        for grid_id in extra_grids:
+            if grid_id not in od:
+                od[grid_id] = {}
         for grid_id, coords in extra_grids.items():
             print("Find paths from: ", grid_id, k, "of", len(extra_grids))
             futures = {}
             for (
                 destination_grid_id,
                 desintation_coords,
-            ) in zip(incident_location_ids, incident_location_coords):
-                futures[destination_grid_id] = executor.submit(
-                    conn.find_distance,
-                    (coords[0], coords[1]),
-                    (desintation_coords[0], desintation_coords[1]),
-                    find_path=False,
-                )
-            od[grid_id] = {
-                destination: future.result() for destination, future in futures.items()
-            }
+            ) in zip(unique_grid_ids, unique_grid_coords):
+                if destination_grid_id not in od[grid_id]:
+                    futures[destination_grid_id] = executor.submit(
+                        conn.find_distance,
+                        (coords[0], coords[1]),
+                        (desintation_coords[0], desintation_coords[1]),
+                        find_path=False,
+                    )
+            for destination, future in futures.items():
+                od[grid_id][destination] = future.result()
             k += 1
 
-    with open(f"scripts/data/od_matrix3.json", "w") as f2:
+    with open(f"scripts/data/od_matrix4.json", "w") as f2:
         json.dump(od, f2, indent=2)
         # exit(1)
