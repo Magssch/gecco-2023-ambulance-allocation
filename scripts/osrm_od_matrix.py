@@ -155,7 +155,10 @@ if __name__ == "__main__":
         easting, northing = latlongs_to_utm[(coors["lat"], coors["long"])]
         od[f"_{easting:.0f}_{northing:.0f}"] = {}
 
-    unique_grid_ids = set(od.keys())
+    unique_grid_ids = [
+        utm_to_grid_id[latlongs_to_utm[(coors["lat"], coors["long"])]]
+        for (_, coors) in grid_coordinates.iterrows()
+    ]
     unique_grid_coords = [
         (coors["lat"], coors["long"]) for (_, coors) in grid_coordinates.iterrows()
     ]
@@ -235,10 +238,11 @@ if __name__ == "__main__":
                             )
                         )
                         od[origin_key][destination][2][j] = grid_id
-                        if (
-                            str(grid_id) not in od
-                            or len(od[str(grid_id)]) < len(unique_grid_ids) - 1
-                        ) and str(grid_id) not in extra_grids:
+                        # if (
+                        #     str(grid_id) not in od
+                        #     or len(od[str(grid_id)]) < len(unique_grid_ids) - 1
+                        # ) and str(grid_id) not in extra_grids:
+                        if str(grid_id) not in unique_grid_ids:
                             extra_grids[str(grid_id)] = path_point
             i += 1
             t2 = time()
@@ -267,13 +271,13 @@ if __name__ == "__main__":
                 destination_grid_id,
                 desintation_coords,
             ) in zip(unique_grid_ids, unique_grid_coords):
-                if destination_grid_id not in od[grid_id]:
-                    futures[destination_grid_id] = executor.submit(
-                        conn.find_distance,
-                        (coords[0], coords[1]),
-                        (desintation_coords[0], desintation_coords[1]),
-                        find_path=False,
-                    )
+                # if destination_grid_id not in od[grid_id]:
+                futures[destination_grid_id] = executor.submit(
+                    conn.find_distance,
+                    (coords[0], coords[1]),
+                    (desintation_coords[0], desintation_coords[1]),
+                    find_path=False,
+                )
             for destination, future in futures.items():
                 od[grid_id][destination] = future.result()
             k += 1
