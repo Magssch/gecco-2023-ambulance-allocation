@@ -9,6 +9,7 @@ import folium
 import PIL.Image
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 
 from common import VISUALIZATION_FOLDER
 from styles import allocation_coloring
@@ -17,38 +18,41 @@ MAP_WIDTH = 400
 MAP_HEIGHT = 800
 
 
-def get_map(width=MAP_WIDTH, height=MAP_HEIGHT, location=[60.045, 11.133], zoom_start=8,):
+def get_map(
+    width=MAP_WIDTH,
+    height=MAP_HEIGHT,
+    location=[60.045, 11.133],
+    zoom_start=8,
+):
     return folium.Map(
         height=height,
         width=width,
         location=location,
-        tiles='cartodbpositron',
+        tiles="cartodbpositron",
         zoom_start=zoom_start,
         zoom_control=False,
     )
 
 
-def _point_to_circle_marker(point, radius, weight=3, color='#000000') -> folium.Marker:
+def _point_to_circle_marker(point, radius, weight=3, color="#000000") -> folium.Marker:
     return folium.CircleMarker(
-        location=point['geometry']['coordinates'][::-1],
+        location=point["geometry"]["coordinates"][::-1],
         radius=radius,
         weight=weight,
         color=color,
         fill=True,
         fill_color=color,
-        fill_opacity=0.7
+        fill_opacity=0.7,
     )
 
 
-def points_to_line(points, weight=3, color='#000000') -> folium.PolyLine:
-    return folium.PolyLine(points,
-                           weight=weight,
-                           color=color,
-                           fill_opacity=0.7
-                           )
+def points_to_line(points, weight=3, color="#000000") -> folium.PolyLine:
+    return folium.PolyLine(points, weight=weight, color=color, fill_opacity=0.7)
 
 
-def coordinates_to_circle_marker(lat, long, radius, weight=3, color='#000000') -> folium.Marker:
+def coordinates_to_circle_marker(
+    lat, long, radius, weight=3, color="#000000"
+) -> folium.Marker:
     return folium.CircleMarker(
         location=[lat, long],
         radius=radius,
@@ -56,7 +60,7 @@ def coordinates_to_circle_marker(lat, long, radius, weight=3, color='#000000') -
         color=color,
         fill=True,
         fill_color=color,
-        fill_opacity=0.7
+        fill_opacity=0.7,
     )
 
 
@@ -67,12 +71,17 @@ def _point_to_text_marker(point, text) -> folium.Marker:
             icon_size=(100, 100),
             icon_anchor=(3, 9),
             html=text,
-        )
+        ),
     )
 
 
-def create_capacity_circle_markers(points, allocation: Counter[int]) -> list[folium.Marker]:
-    return [_point_to_circle_marker(point, 12, 0, allocation_coloring(allocation[i])) for i, point in enumerate(points)] + [_point_to_text_marker(point, allocation[i]) for i, point in enumerate(points)]
+def create_capacity_circle_markers(
+    points, allocation: Counter[int]
+) -> list[folium.Marker]:
+    return [
+        _point_to_circle_marker(point, 12, 0, allocation_coloring(allocation[i]))
+        for i, point in enumerate(points)
+    ] + [_point_to_text_marker(point, allocation[i]) for i, point in enumerate(points)]
 
 
 def create_circle_markers(points):
@@ -80,7 +89,9 @@ def create_circle_markers(points):
 
 
 def get_geojson_items(geojson_file_name, style_function):
-    return folium.GeoJson(geojson_file_name, name='geojson', style_function=style_function)
+    return folium.GeoJson(
+        geojson_file_name, name="geojson", style_function=style_function
+    )
 
 
 def export_map(folium_map: folium.Map, file_name, width=MAP_WIDTH):
@@ -90,12 +101,14 @@ def export_map(folium_map: folium.Map, file_name, width=MAP_WIDTH):
     _, height = image.size
     image = image.crop((0, 0, width, height))
 
-    image.save(f'{VISUALIZATION_FOLDER}/{file_name}.png')
+    image.save(f"{VISUALIZATION_FOLDER}/{file_name}.png")
 
 
-def export_map_with_chrome(folium_map: folium.Map, file_name, width=MAP_WIDTH, height=MAP_HEIGHT):
-    html_file = f'{VISUALIZATION_FOLDER}/{file_name}.html'
-    png_file = f'{VISUALIZATION_FOLDER}/{file_name}.png'
+def export_map_with_chrome(
+    folium_map: folium.Map, file_name, width=MAP_WIDTH, height=MAP_HEIGHT
+):
+    html_file = f"{VISUALIZATION_FOLDER}/{file_name}.html"
+    png_file = f"{VISUALIZATION_FOLDER}/{file_name}.png"
 
     # Temporarily save as html
     folium_map.save(html_file)
@@ -103,19 +116,23 @@ def export_map_with_chrome(folium_map: folium.Map, file_name, width=MAP_WIDTH, h
     # Setup Chrome
     options = Options()
     options.headless = True
-    driver_path = '/usr/bin/chromedriver' if platform.system() == 'Linux' else '/usr/local/bin/chromedriver'
-    driver = webdriver.Chrome(driver_path, options=options)
+    driver_path = (
+        "/usr/bin/chromedriver"
+        if platform.system() == "Linux"
+        else "/usr/local/bin/chromedriver"
+    )
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
     driver.set_window_size(4000, 3000)
 
     # Open in Chrome and save screenshot
-    driver.get(f'file://{Path.cwd()}/{html_file}')
+    driver.get(f"file://{Path.cwd()}/{html_file}")
     time.sleep(1)
     driver.save_screenshot(png_file)
 
     # Crop & save
     image = PIL.Image.open(png_file)
     image = image.crop((0, 0, width, height))
-    image.save(f'{VISUALIZATION_FOLDER}/{file_name}.png')
+    image.save(f"{VISUALIZATION_FOLDER}/{file_name}.png")
 
     # Clean up
     os.remove(html_file)
