@@ -61,8 +61,9 @@ public class FirstExperiment implements Experiment {
 
         allocationResult.saveColumn(name + "_d", dayShiftAllocation.stream().sorted().toList());
         allocationResult.saveColumn(name + "_n", nightShiftAllocation.stream().sorted().toList());
-        responseTimeResult.saveColumn("timestamp", responseTimes.keys());
-        responseTimeResult.saveColumn(name, responseTimes.values());
+        responseTimeResult.saveColumn("timestamp", responseTimes.getTimestamps());
+        responseTimeResult.saveColumn("coords", responseTimes.getCoordinates());
+        responseTimeResult.saveColumn(name, responseTimes.getResponseTimes());
         stochasticResponseTimeResult.saveColumn(name, Collections.nCopies(Parameters.RUNS, responseTimes.average()));
 
         logger.info("Done");
@@ -89,8 +90,9 @@ public class FirstExperiment implements Experiment {
 
         allocationResult.saveColumn(name + "_d", medianAllocation.getDayShiftAllocationSorted());
         allocationResult.saveColumn(name + "_n", medianAllocation.getNightShiftAllocationSorted());
-        responseTimeResult.saveColumn("timestamp", medianResponseTimes.keys());
-        responseTimeResult.saveColumn(name, medianResponseTimes.values());
+        responseTimeResult.saveColumn("timestamp", medianResponseTimes.getTimestamps());
+        responseTimeResult.saveColumn("coords", medianResponseTimes.getCoordinates());
+        responseTimeResult.saveColumn(name, medianResponseTimes.getResponseTimes());
         stochasticResponseTimeResult.saveColumn(name, fitness);
 
         logger.info("Done");

@@ -314,7 +314,7 @@ public final class Simulation {
             if (responseTime < 0) {
                 throw new IllegalStateException("Response time should never be negative");
             }
-            responseTimes.add(newCall.incident.callReceived(), responseTime);
+            responseTimes.add(newCall.incident.callReceived(), newCall.incident.getLocation(), responseTime);
         }
     }
 

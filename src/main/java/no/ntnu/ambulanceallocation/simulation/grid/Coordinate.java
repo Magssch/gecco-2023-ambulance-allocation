@@ -75,4 +75,9 @@ public record Coordinate(int x, int y, long id) {
         int gridNorthing = getGridCornerNorthing(northing);
         return (long) (2 * Math.pow(10, 13) + gridEasting * Math.pow(10, 7) + gridNorthing);
     }
+
+    public String toString() {
+        return String.valueOf(id);
+    }
+
 }
