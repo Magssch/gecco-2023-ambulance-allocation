@@ -157,11 +157,10 @@ if __name__ == "__main__":
 
     unique_grid_ids = [
         utm_to_grid_id[latlongs_to_utm[(coors["lat"], coors["long"])]]
-        for (_, coors) in grid_coordinates.iterrows()
+        for (_, coors) in coordinates.iterrows()
     ]
-    unique_grid_coords = [
-        (coors["lat"], coors["long"]) for (_, coors) in grid_coordinates.iterrows()
-    ]
+    extra_path_destination_ids = []
+    extra_path_destination_coords = []
 
     n = (
         len(grid_coordinates)
@@ -174,7 +173,7 @@ if __name__ == "__main__":
 
     # Read cached OD matrix
     od_cached = {}
-    with open(f"scripts/data/od_matrix3.json", "r") as f1:
+    with open(f"scripts/data/od_matrix.json", "r") as f1:
         od_cached = json.load(f1)
         for k, v in od_cached.items():
             od[k] = v
@@ -192,6 +191,8 @@ if __name__ == "__main__":
                 if grid_origin
                 else f"_{easting_orig:.0f}_{northing_orig:.0f}"
             )
+            extra_path_destination_ids.append(origin_key)
+            extra_path_destination_coords.append((origin_lat, origin_long))
             g = 0
             for (
                 _,
@@ -212,8 +213,9 @@ if __name__ == "__main__":
                     if grid_destination
                     else f"_{easting_dest:.0f}_{northing_dest:.0f}"
                 )
-                if destination_is_base_station or (
-                    not od[origin_key]
+                if (
+                    destination_is_base_station
+                    or not od[origin_key]
                     or destination_key not in od[origin_key]
                     or not od[origin_key][destination_key]
                 ):
@@ -238,10 +240,6 @@ if __name__ == "__main__":
                             )
                         )
                         od[origin_key][destination][2][j] = grid_id
-                        # if (
-                        #     str(grid_id) not in od
-                        #     or len(od[str(grid_id)]) < len(unique_grid_ids) - 1
-                        # ) and str(grid_id) not in extra_grids:
                         if str(grid_id) not in unique_grid_ids:
                             extra_grids[str(grid_id)] = path_point
             i += 1
@@ -270,8 +268,7 @@ if __name__ == "__main__":
             for (
                 destination_grid_id,
                 desintation_coords,
-            ) in zip(unique_grid_ids, unique_grid_coords):
-                # if destination_grid_id not in od[grid_id]:
+            ) in zip(extra_path_destination_ids, extra_path_destination_coords):
                 futures[destination_grid_id] = executor.submit(
                     conn.find_distance,
                     (coords[0], coords[1]),
@@ -282,6 +279,6 @@ if __name__ == "__main__":
                 od[grid_id][destination] = future.result()
             k += 1
 
-    with open(f"scripts/data/od_matrix4.json", "w") as f2:
+    with open(f"scripts/data/od_matrix2.json", "w") as f2:
         json.dump(od, f2, indent=2)
         # exit(1)

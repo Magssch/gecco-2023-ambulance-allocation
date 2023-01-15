@@ -21,7 +21,7 @@ def euclidean_distance_id(origin, destination):
     )
 
 
-with open("scripts/data/od_matrix4.json", "r") as f1:
+with open("scripts/data/od_matrix2.json", "r") as f1:
     print("Loading OD matrix...")
     od_matrix = json.load(f1)
 
@@ -99,7 +99,8 @@ mean_of_means = sum(mean_of_means) / len(mean_of_means)
 for grid_id in uncalculated_cells:
     od_matrix[grid_id][grid_id] = [mean_of_means, 0]
 
-with open(f"scripts/data/od_matrix5.json", "w") as f2:
+print("Writing to file...")
+with open(f"scripts/data/od_matrix3.json", "w") as f2:
     json.dump(od_matrix, f2, indent=2)
 
 utm_and_latlong_df = pd.DataFrame(utm_and_latlong)

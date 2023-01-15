@@ -131,7 +131,7 @@ public class Ambulance {
         if (originatingLocation.timeTo(destination) - elapsedTime <= 0) {
             return destination;
         }
-        if (destination.routeExists(originatingLocation) && originatingLocation.pathTo(destination) != null) {
+        if (originatingLocation.routeExists(destination) && originatingLocation.pathTo(destination) != null) {
             Coordinate[] path = originatingLocation.pathTo(destination);
             for (int i = 0; i < path.length; i++) {
                 if (originatingLocation.timeTo(path[i]) <= elapsedTime) {

@@ -321,6 +321,7 @@ def visualize_first_experiment():
     df = pd.read_csv(file)
 
     visualize_geographic_response_time_distribution(df, "PopulationProportionate")
+    df.drop(columns="coords", inplace=True)
 
     regular_plot(df, "first_experiment/response_times")
     regular_plot(df, "first_experiment/response_times_log", log_scale=True)

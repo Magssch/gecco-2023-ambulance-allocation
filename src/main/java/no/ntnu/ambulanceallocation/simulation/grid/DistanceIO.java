@@ -32,7 +32,8 @@ public final class DistanceIO {
     public static final Map<String, Coordinate> coordinateStringCache = new HashMap<>();
     public static final Map<Long, Coordinate> coordinateLongCache = new HashMap<>();
     private static final Logger logger = LoggerFactory.getLogger(DistanceIO.class);
-    public static final Map<Tuple<Double>, Coordinate> utmToLatLongMap = new HashMap<>();
+    public static final Map<Tuple<Double>, Coordinate> latLongToUtmMap = new HashMap<>();
+    public static final Map<Long, Tuple<Double>> utmToLatLongMap = new HashMap<>();
 
     static {
         loadUTMToLatLongMap();
@@ -46,7 +47,8 @@ public final class DistanceIO {
         // return new OneToManyRoutes(from, to, 0, null);
         // }
         if (!distances.containsKey(new Tuple<>(from, to))) {
-            logger.info("Failed to find distance from {} to {}", from, to);
+            logger.info("Failed to find distance from {} to {}",
+                    from.id(), to.id());
             return null;
         }
         return distances.get(new Tuple<>(from, to));
@@ -55,11 +57,14 @@ public final class DistanceIO {
     public static void loadUTMToLatLongMap() {
         try {
             CSV.readCSVThenParse("utm_and_latlong.csv", values -> {
-                Coordinate coordinate = new Coordinate(Integer.valueOf(values[0]), Integer.valueOf(values[1]));
-                utmToLatLongMap.put(new Tuple<>(Double.valueOf(values[2]), Double.valueOf(values[3])), coordinate);
+                Coordinate coordinate = new Coordinate(Double.valueOf(values[0]).intValue(),
+                        Double.valueOf(values[1]).intValue());
+                latLongToUtmMap.put(new Tuple<>(Double.valueOf(values[2]), Double.valueOf(values[3])), coordinate);
+                utmToLatLongMap.put(coordinate.id(),
+                        new Tuple<>(Double.valueOf(values[2]), Double.valueOf(values[3])));
             });
         } catch (IOException | NumberFormatException e) {
-            logger.error("load {}", e);
+            logger.error("Failed to load utm and latlong map {}", e);
         }
     }
 

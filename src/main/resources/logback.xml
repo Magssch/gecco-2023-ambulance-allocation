@@ -4,11 +4,11 @@
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
-    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+    <!-- <filter class="ch.qos.logback.classic.filter.LevelFilter">
       <level>INFO</level>
       <onMatch>ACCEPT</onMatch>
       <onMismatch>DENY</onMismatch>
-    </filter>
+    </filter> -->
   </appender>
   <appender name="roll-by-size" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>output/simulation/app.log</file>
@@ -27,6 +27,9 @@
 </appender>
 
   <root level="INFO">
+    <appender-ref ref="STDOUT" />
+  </root>
+  <root level="ERROR">
     <appender-ref ref="STDOUT" />
   </root>
   <root level="debug">
