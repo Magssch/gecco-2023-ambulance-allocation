@@ -29,23 +29,21 @@ public final class Parameters {
     // Simulation visualization
     public static final int GUI_UPDATE_INTERVAL = 400; // every x milliseconds
 
-    // Route calculation
-    public static final int COORDINATE_NEIGHBOR_DISTANCE = 8000; // meters
-
     // SLS
     public static final int MAX_TRIES = 999;
     public static final double RESTART_PROBABILITY = 0.025;
     public static final double NOISE_PROBABILITY = 0.8;
 
     // Genetic & Memetic Algorithm
-    public static final Initializer INITIALIZER = new Random();
-    public static final int GENERATIONS = 999;
-    public static final int POPULATION_SIZE = 30;
-    public static final int ELITE_SIZE = 4;
-    public static final int TOURNAMENT_SIZE = 5;
+    public static Initializer INITIALIZER = new Random();
+    public static int POPULATIONPROPORTIONATE_SEEDING_SIZE = 1;
+    public static int GENERATIONS = 999;
+    public static int POPULATION_SIZE = 36;
+    public static int ELITE_SIZE = 4;
+    public static int TOURNAMENT_SIZE = 5;
 
-    public static final double CROSSOVER_PROBABILITY = 0.2;
-    public static final double MUTATION_PROBABILITY = 0.05;
-    public static final double IMPROVE_PROBABILITY = 0.25;
+    public static double CROSSOVER_PROBABILITY = 0.2;
+    public static double MUTATION_PROBABILITY = 0.05;
+    public static double IMPROVE_PROBABILITY = 0.25;
 
 }

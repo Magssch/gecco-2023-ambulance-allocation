@@ -19,7 +19,7 @@ import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
 import no.ntnu.ambulanceallocation.utils.Tuple;
 
-public class FourthExperiment implements Experiment {
+public class FourthExperiment extends Experiment {
 
     private static final Logger logger = LoggerFactory.getLogger(FourthExperiment.class);
 

@@ -13,7 +13,7 @@ import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
 import no.ntnu.ambulanceallocation.utils.Tuple;
 
-public class ThirdExperiment implements Experiment {
+public class ThirdExperiment extends Experiment {
 
     private static final Logger logger = LoggerFactory.getLogger(ThirdExperiment.class);
 
@@ -58,21 +58,28 @@ public class ThirdExperiment implements Experiment {
                             18, 1, 13))),
             "SLS",
             new Allocation(List.of(
-                    List.of(0, 1, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 9, 9, 9, 10, 10,
+                    List.of(0, 1, 2, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8,
+                            8, 9, 9, 9, 10, 10,
                             11, 12, 12, 12, 13, 13, 14, 14, 14, 15, 15, 15, 15, 16, 17),
-                    List.of(0, 0, 1, 2, 4, 6, 6, 7, 7, 7, 7, 7, 8, 9, 9, 10, 10, 10, 11, 12, 14, 14, 15, 16, 16, 17, 17,
+                    List.of(0, 0, 1, 2, 4, 6, 6, 7, 7, 7, 7, 7, 8, 9, 9, 10, 10, 10, 11, 12, 14, 14,
+                            15, 16, 16, 17, 17,
                             18))),
             "GA (1 week)",
             new Allocation(List.of(
-                    List.of(0, 0, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 6, 7, 7, 7, 7, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11,
-                            12, 12, 13, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 17, 17, 18, 18),
-                    List.of(0, 0, 1, 2, 3, 4, 4, 6, 7, 7, 8, 8, 8, 8, 9, 10, 10, 11, 12, 13, 14, 15, 15, 15, 16, 16, 17,
+                    List.of(0, 0, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 6, 7, 7, 7, 7, 8, 8, 9, 9, 9, 10,
+                            10, 10, 11, 11, 11,
+                            12, 12, 13, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 17, 17, 18,
+                            18),
+                    List.of(0, 0, 1, 2, 3, 4, 4, 6, 7, 7, 8, 8, 8, 8, 9, 10, 10, 11, 12, 13, 14, 15,
+                            15, 15, 16, 16, 17,
                             17, 18))),
             "MA",
             new Allocation(List.of(
-                    List.of(0, 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 9, 9, 10, 10, 10, 11, 11,
+                    List.of(0, 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 9, 9,
+                            10, 10, 10, 11, 11,
                             12, 12, 13, 13, 14, 15, 15, 15, 15, 16, 16, 16, 17, 17, 18, 18),
-                    List.of(0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 9, 10, 10, 11, 11, 13, 13, 14, 15, 15, 17,
+                    List.of(0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 9, 10, 10, 11, 11, 13,
+                            13, 14, 15, 15, 17,
                             17, 18))),
             "GA (1 year)",
             new Allocation(List.of(

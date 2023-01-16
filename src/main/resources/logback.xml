@@ -1,38 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+  <!-- <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+  <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
-    <!-- <filter class="ch.qos.logback.classic.filter.LevelFilter">
+   <filter
+  class="ch.qos.logback.classic.filter.LevelFilter">
       <level>INFO</level>
-      <onMatch>ACCEPT</onMatch>
+  <onMatch>ACCEPT</onMatch>
       <onMismatch>DENY</onMismatch>
-    </filter> -->
-  </appender>
+    </filter>
+  </appender> -->
   <appender name="roll-by-size" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>output/simulation/app.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-        <fileNamePattern>output/simulation/app.%i.log.zip</fileNamePattern>
-        <minIndex>1</minIndex>
-        <maxIndex>3</maxIndex>
-        <totalSizeCap>1MB</totalSizeCap>
+      <fileNamePattern>output/simulation/app.%i.log.zip</fileNamePattern>
+      <minIndex>1</minIndex>
+      <maxIndex>3</maxIndex>
+      <totalSizeCap>1MB</totalSizeCap>
     </rollingPolicy>
     <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-       <maxFileSize>5KB</maxFileSize>
+      <maxFileSize>5KB</maxFileSize>
     </triggeringPolicy>
     <encoder>
-        <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
-</appender>
+  </appender>
 
-  <root level="INFO">
+  <!-- <root level="INFO">
     <appender-ref ref="STDOUT" />
   </root>
   <root level="ERROR">
-    <appender-ref ref="STDOUT" />
-  </root>
+  <appender-ref ref="STDOUT" />
+  </root> -->
   <root level="debug">
+    <appender-ref ref="roll-by-size" />
+  </root>
+  <root level="error">
     <appender-ref ref="roll-by-size" />
   </root>
 </configuration>

@@ -19,7 +19,7 @@ import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
 import no.ntnu.ambulanceallocation.utils.Utils;
 
-public class FirstExperiment implements Experiment {
+public class FirstExperiment extends Experiment {
 
     private static final Logger logger = LoggerFactory.getLogger(FirstExperiment.class);
 
@@ -99,6 +99,7 @@ public class FirstExperiment implements Experiment {
     }
 
     public static void main(String[] args) {
+        setParameterValues(args);
         logger.info("Running experiment 1 ...");
         FirstExperiment firstExperiment = new FirstExperiment();
         firstExperiment.run();

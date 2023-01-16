@@ -18,9 +18,9 @@ import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
 import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
 
-public class SecondExperiment implements Experiment {
+public class SecondExperiment extends Experiment {
 
-    private static final Logger logger = LoggerFactory.getLogger(FirstExperiment.class);
+    private static final Logger logger = LoggerFactory.getLogger(SecondExperiment.class);
 
     private final Result bestFitnessAtTerminationResult = new Result();
     private final Result overallBestResponseTimesResult = new Result();
@@ -31,7 +31,8 @@ public class SecondExperiment implements Experiment {
         // Setup
         StochasticLocalSearch forwardStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.FORWARD);
         GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
-        MemeticAlgorithm forwardMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.FORWARD);
+        MemeticAlgorithm forwardMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                NeighborhoodFunction.FORWARD);
 
         // Partial experiments
         runStochasticExperiment(forwardStochasticLocalSearch);
@@ -61,7 +62,7 @@ public class SecondExperiment implements Experiment {
             Solution solution = optimizer.getOptimalSolution();
             bestFitnessAtTermination.add(solution.getFitness());
 
-            if (solution.getFitness() > overallBestFitness) {
+            if (solution.getFitness() < overallBestFitness) {
                 overallBestAllocation = solution.getAllocation();
                 overallBestRunStatistics = optimizer.getRunStatistics();
             }
@@ -71,10 +72,12 @@ public class SecondExperiment implements Experiment {
 
         ResponseTimes overallBestResponseTimes = Simulation.withDefaultConfig().simulate(overallBestAllocation);
         bestFitnessAtTerminationResult.saveColumn(optimizerName, bestFitnessAtTermination);
-        overallBestResponseTimesResult.saveColumn("timestamp", overallBestResponseTimes.keys());
-        overallBestResponseTimesResult.saveColumn(optimizerName, overallBestResponseTimes.values());
-        overallBestAllocationResult.saveColumn(optimizerName + "_d", overallBestAllocation.getDayShiftAllocationSorted());
-        overallBestAllocationResult.saveColumn(optimizerName + "_n", overallBestAllocation.getNightShiftAllocationSorted());
+        overallBestResponseTimesResult.saveColumn("timestamp", overallBestResponseTimes.getTimestamps());
+        overallBestResponseTimesResult.saveColumn(optimizerName, overallBestResponseTimes.getResponseTimes());
+        overallBestAllocationResult.saveColumn(optimizerName + "_d",
+                overallBestAllocation.getDayShiftAllocationSorted());
+        overallBestAllocationResult.saveColumn(optimizerName + "_n",
+                overallBestAllocation.getNightShiftAllocationSorted());
         overallBestRunStatistics.saveResults(String.format("second_experiment_%s", optimizerName.toLowerCase()));
     }
 
