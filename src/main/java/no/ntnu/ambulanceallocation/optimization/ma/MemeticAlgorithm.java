@@ -78,11 +78,6 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
 
                         offspringA.mutate(Parameters.MUTATION_PROBABILITY);
                         offspringB.mutate(Parameters.MUTATION_PROBABILITY);
-                        // MA step
-                        offspringA.improve(evolutionStrategy, neighborhoodFunction,
-                                Parameters.IMPROVE_PROBABILITY);
-                        offspringB.improve(evolutionStrategy, neighborhoodFunction,
-                                Parameters.IMPROVE_PROBABILITY);
 
                         synchronized (nextPopulation) {
                             if (nextPopulation.size() < Parameters.POPULATION_SIZE) {
@@ -102,6 +97,10 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+
+                // MA step
+                nextPopulation.elite(2).forEach(
+                        individual -> individual.improve(evolutionStrategy, neighborhoodFunction, 1.0));
 
                 population = nextPopulation;
                 population.evaluate();
