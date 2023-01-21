@@ -197,7 +197,7 @@ def main():
     global funnel_statistics
     funnel_statistics = []
 
-    input_data_file = "proprietary_data/anonymized_data.csv"
+    input_data_file = "proprietary_data/cleaned_data.csv"
     output_data_file = "proprietary_data/processed_data.csv"
 
     buffer_size = 4  # hours
