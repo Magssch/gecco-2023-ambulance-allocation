@@ -2,7 +2,6 @@ package no.ntnu.ambulanceallocation.optimization.ga;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,8 +19,6 @@ import no.ntnu.ambulanceallocation.utils.Tuple;
 import no.ntnu.ambulanceallocation.utils.Utils;
 
 public class Individual extends Solution {
-
-    private static Map<Individual, Boolean> neighborMap = new HashMap<>();
 
     public Individual(List<List<Integer>> chromosomes) {
         super(chromosomes);
@@ -90,9 +87,6 @@ public class Individual extends Solution {
     // Memetic method
     public void improve(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
             double improveProbability) {
-        if (neighborMap.containsKey(this) && !neighborMap.get(this)) {
-            return;
-        }
         if (Utils.randomDouble() < improveProbability) {
             // find best individual in population
             switch (evolutionStrategy) {
@@ -209,9 +203,6 @@ public class Individual extends Solution {
                 new Individual(List.of(dayAmbulanceAllocation, nightNeighboorhoodAllocation1)),
                 new Individual(List.of(dayAmbulanceAllocation, nightNeighboorhoodAllocation2))).stream()
                 .min(Comparator.comparingDouble(Individual::getFitness)).get();
-        if (bestNeighbor.getFitness() < this.getFitness()) {
-            neighborMap.put(this, true);
-        }
         return bestNeighbor;
     }
 }
