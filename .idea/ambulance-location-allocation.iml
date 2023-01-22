@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="Python" name="Python">
+      <configuration sdkName="Python 3.10 (gecco-2023-ambulance-allocation)" />
+    </facet>
+  </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_19_PREVIEW">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
@@ -9,6 +14,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -37,5 +43,6 @@
     <orderEntry type="library" name="Maven: me.tongfei:progressbar:0.9.3" level="project" />
     <orderEntry type="library" name="Maven: org.jline:jline:3.21.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.10" level="project" />
+    <orderEntry type="library" name="Python 3.10 (gecco-2023-ambulance-allocation) interpreter library" level="application" />
   </component>
 </module>
