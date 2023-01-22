@@ -9,8 +9,8 @@ import no.ntnu.ambulanceallocation.simulation.DispatchPolicy;
 
 public final class Parameters {
     // General
-    public final static int RUNS = 15;
-    public final static int MAX_RUNNING_TIME = (int) (4.0 * 60); // minutes
+    public static int RUNS = 15;
+    public static int MAX_RUNNING_TIME = (int) (4.0 * 60); // minutes
 
     // Simulation
     public static final int BUFFER_SIZE = 4; // hours

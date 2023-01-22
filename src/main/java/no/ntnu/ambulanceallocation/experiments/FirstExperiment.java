@@ -99,7 +99,6 @@ public class FirstExperiment extends Experiment {
     }
 
     public static void main(String[] args) {
-        setParameterValues(args);
         logger.info("Running experiment 1 ...");
         FirstExperiment firstExperiment = new FirstExperiment();
         firstExperiment.run();

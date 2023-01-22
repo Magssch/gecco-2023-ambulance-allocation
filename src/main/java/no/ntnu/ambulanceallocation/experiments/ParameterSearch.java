@@ -23,6 +23,8 @@ public class ParameterSearch extends Experiment {
     private final Result overallBestResponseTimesResult = new Result();
     private final Result overallBestAllocationResult = new Result();
 
+    private final List<Double> bestFitnessAtTermination = new ArrayList<>();
+
     @Override
     public void run() {
         // Setup
@@ -34,17 +36,26 @@ public class ParameterSearch extends Experiment {
             default -> throw new IllegalArgumentException("Unexpected value: " +
                     parameters.get("optimizer"));
         };
-        Parameters.POPULATIONPROPORTIONATE_SEEDING_SIZE = Integer.parseInt(parameters.get("-seedingSize"));
-        Parameters.POPULATION_SIZE = Integer.parseInt(parameters.get("-populationSize"));
-        Parameters.ELITE_SIZE = Integer.parseInt(parameters.get("-eliteSize"));
-        Parameters.TOURNAMENT_SIZE = Integer.parseInt(parameters.get("-tournamentSize"));
-        Parameters.CROSSOVER_PROBABILITY = Double.parseDouble(parameters.get("-crossoverProbability"));
-        Parameters.MUTATION_PROBABILITY = Double.parseDouble(parameters.get("-mutationProbability"));
-        Parameters.IMPROVE_PROBABILITY = Double.parseDouble(parameters.get("-improveProbability"));
 
-        // System.out.println("Running " + optimizer.getAbbreviation() + " with
-        // parameters: " + parameters.toString());
-        runStochasticExperiment(optimizer);
+        Parameters.RUNS = Integer.parseInt(parameters.get("-numberOfRuns"));
+        Parameters.MAX_RUNNING_TIME = Integer.parseInt(parameters.get("-runningTime"));
+
+        for (String parameterConfig : parameters.get("-paramList").split(";")) {
+            String[] params = parameterConfig.split(",");
+
+            Parameters.POPULATIONPROPORTIONATE_SEEDING_SIZE = Integer.parseInt(params[0]);
+            Parameters.POPULATION_SIZE = Integer.parseInt(params[1]);
+            Parameters.ELITE_SIZE = Integer.parseInt(params[2]);
+            Parameters.TOURNAMENT_SIZE = Integer.parseInt(params[3]);
+            Parameters.CROSSOVER_PROBABILITY = Double.parseDouble(params[4]);
+            Parameters.MUTATION_PROBABILITY = Double.parseDouble(params[5]);
+            Parameters.IMPROVE_PROBABILITY = Double.parseDouble(params[6]);
+            // System.out.println("Running " + optimizer.getAbbreviation() + " with
+            // parameters: " + parameters.toString());
+            runStochasticExperiment(optimizer);
+        }
+        System.out.print(String.join(",", bestFitnessAtTermination.stream().map(String::valueOf).toList()));
+        System.exit(0);
     }
 
     @Override
@@ -56,7 +67,6 @@ public class ParameterSearch extends Experiment {
 
     private void runStochasticExperiment(Optimizer optimizer) {
         String optimizerName = optimizer.getAbbreviation();
-        List<Double> bestFitnessAtTermination = new ArrayList<>();
 
         for (int i = 0; i < Parameters.RUNS; i++) {
             logger.info("Starting {}... run {}/{}", optimizerName, i + 1,
@@ -64,10 +74,7 @@ public class ParameterSearch extends Experiment {
             optimizer.optimize();
             Solution solution = optimizer.getOptimalSolution();
             bestFitnessAtTermination.add(solution.getFitness());
-
         }
-        System.out.print(String.join(",", bestFitnessAtTermination.stream().map(String::valueOf).toList()));
-        System.exit(0);
     }
 
     public static void main(String[] args) {
