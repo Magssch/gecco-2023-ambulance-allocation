@@ -172,6 +172,7 @@ dmypy.json
 !/**/.gitkeep
 
 *od.json
+*.geojson
 
 # -------------------- Intellij -------------------- 
 
