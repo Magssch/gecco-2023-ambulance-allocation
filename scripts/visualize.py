@@ -227,7 +227,7 @@ def visualize_sls_run(filename: str):
 
     plt.legend()
 
-    fig.savefig(f"{VISUALIZATION_FOLDER}/second_experiment/{name}{FILE_EXTENSION}")
+    fig.savefig(f"{VISUALIZATION_FOLDER}/first_experiment/{name}{FILE_EXTENSION}")
     plt.close()
 
 
@@ -255,27 +255,7 @@ def visualize_ga_run(filename: str):
 
     fig.tight_layout()
     ax1.legend()
-    fig.savefig(f"{VISUALIZATION_FOLDER}/second_experiment/{algorithm}{FILE_EXTENSION}")
-    plt.close()
-
-
-def comparison_plot():
-    file = f"{SIMULATION_FOLDER}/second_experiment_best_fitness_at_termination.csv"
-    df = pd.read_csv(file)
-    n_bins = 5
-
-    fig, ax = plt.subplots()
-    ax.hist(df, n_bins, label=df.columns)
-
-    ax.set_title("Performance of algorithms")
-    ax.set_xlabel("best fitness at termination")
-    ax.set_ylabel("runs ending with this fitness")
-
-    fig.tight_layout()
-    ax.legend()
-    fig.savefig(
-        f"{VISUALIZATION_FOLDER}/second_experiment/comparison_histogram{FILE_EXTENSION}"
-    )
+    fig.savefig(f"{VISUALIZATION_FOLDER}/first_experiment/{algorithm}{FILE_EXTENSION}")
     plt.close()
 
 
@@ -335,54 +315,18 @@ def visualize_first_experiment():
     )
 
     plot_box_plot(
-        "simulation/first_experiment_distribution",
-        f"first_experiment/distribution_box_plot{FILE_EXTENSION}",
+        "simulation/first_experiment_runs",
+        f"first_experiment/runs_box_plot{FILE_EXTENSION}",
     )
 
     save_aggregated_allocations(
         "first_experiment_allocations", "first_experiment_allocations"
     )
-    save_statistics("first_experiment_distribution", "first_experiment_statistics")
+    save_statistics("first_experiment_runs", "first_experiment_statistics")
 
-    print("done.")
-
-
-def visualize_second_experiment():
-    print("Visualizing second experiment data...")
-    ensure_folder_exists(f"{VISUALIZATION_FOLDER}/second_experiment")
-    file = f"{SIMULATION_FOLDER}/second_experiment_response_times.csv"
-    df = pd.read_csv(file)
-
-    regular_plot(df, "second_experiment/response_times")
-    regular_plot(df, "second_experiment/response_times_log", log_scale=True)
-
-    df.drop(["timestamp"], axis=1, inplace=True)  # not needed in the latter plots
-
-    sorted_plot(df, "second_experiment/response_times_sorted")
-    sorted_plot(df, "second_experiment/response_times_sorted_log", log_scale=True)
-    sorted_plot(
-        df,
-        "second_experiment/response_times_sorted_log_zoom",
-        log_scale=True,
-        zoom=True,
-    )
-
-    visualize_sls_run("second_experiment_sls")
-    visualize_ga_run("second_experiment_ga")
-    visualize_ga_run("second_experiment_ma")
-
-    comparison_plot()
-    plot_box_plot(
-        "simulation/second_experiment_best_fitness_at_termination",
-        f"second_experiment/distribution_box_plot{FILE_EXTENSION}",
-    )
-
-    save_statistics(
-        "second_experiment_best_fitness_at_termination", "second_experiment_statistics"
-    )
-    save_aggregated_allocations(
-        "second_experiment_allocations", "second_experiment_allocations"
-    )
+    visualize_sls_run("first_experiment_sls")
+    visualize_ga_run("first_experiment_ga")
+    visualize_ga_run("first_experiment_ma")
 
     print("done.")
 
@@ -468,39 +412,6 @@ def visualize_fourth_experiment():
     print("done.")
 
 
-def visualize_first_and_second():
-    print("Visualizing first and second experiment data...")
-    ensure_folder_exists(f"{VISUALIZATION_FOLDER}/first_and_second_experiment")
-    file = f"{OUTPUT_FOLDER}/first_and_second_experiment.csv"
-    df = pd.read_csv(file)
-
-    regular_plot(df, "first_and_second_experiment/response_times")
-    regular_plot(df, "first_and_second_experiment/response_times_log", log_scale=True)
-
-    df.drop(["timestamp"], axis=1, inplace=True)  # not needed in the latter plots
-
-    sorted_plot(df, "first_and_second_experiment/response_times_sorted")
-    sorted_plot(
-        df, "first_and_second_experiment/response_times_sorted_log", log_scale=True
-    )
-    sorted_plot(
-        df,
-        "first_and_second_experiment/response_times_sorted_log_zoom",
-        log_scale=True,
-        zoom=True,
-    )
-
-    plot_box_plot(
-        "first_and_second_experiment_distribution",
-        f"first_and_second_experiment/distribution_box_plot{FILE_EXTENSION}",
-    )
-    save_statistics(
-        "../first_and_second_experiment_distribution",
-        "first_and_second_experiment_statistics",
-    )
-    print("done.")
-
-
 def configure_matplotlib():
     font = {"family": "serif", "size": 14}
     figure = {
@@ -517,24 +428,9 @@ def configure_matplotlib():
 def main():
     configure_matplotlib()
 
-    # combine_files(
-    #     "first_and_second_experiment",
-    #     "first_experiment_response_times",
-    #     "second_experiment_response_times",
-    # )
-    # combine_files(
-    #     "first_and_second_experiment_distribution",
-    #     "first_experiment_distribution",
-    #     "second_experiment_best_fitness_at_termination",
-    #     False,
-    # )
-
     visualize_first_experiment()
-    visualize_second_experiment()
-    visualize_third_experiment()
-    visualize_fourth_experiment()
-
-    visualize_first_and_second()
+    # visualize_third_experiment()
+    # visualize_fourth_experiment()
 
     ambulance_allocation.plot()
 
