@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -118,6 +119,56 @@ public class Individual extends Solution {
         SlsSolution slsSolution = new SlsSolution(this);
         SlsSolution bestNeighborhood = slsSolution.greedyStep(neighborhoodFunction);
         return new Individual(bestNeighborhood);
+    }
+
+    private Individual explorePopulationProportionateNeighborhood() {
+
+        Map<Integer, Long> dayAmbulanceStationFrequency = this.getAllocation().getDayShiftAllocation().stream()
+                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+        Map<Integer, Long> nightAmbulanceStationFrequency = this.getAllocation().getNightShiftAllocation().stream()
+                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+
+        Optional<BaseStation> highestProportionDay = dayAmbulanceStationFrequency.keySet().stream()
+                .map(BaseStation::get)
+                .max(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
+                        / dayAmbulanceStationFrequency.get(baseStation.getId())));
+
+        Optional<BaseStation> lowestProportionDay = dayAmbulanceStationFrequency.keySet().stream()
+                .map(BaseStation::get)
+                .min(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
+                        / dayAmbulanceStationFrequency.get(baseStation.getId())));
+
+        Optional<BaseStation> highestProportionNight = nightAmbulanceStationFrequency.keySet().stream()
+                .map(BaseStation::get)
+                .max(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
+                        / nightAmbulanceStationFrequency.get(baseStation.getId())));
+
+        Optional<BaseStation> lowestProportionNight = nightAmbulanceStationFrequency.keySet().stream()
+                .map(BaseStation::get)
+                .min(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
+                        / nightAmbulanceStationFrequency.get(baseStation.getId())));
+
+        BaseStation highestProportionBaseStationDay = highestProportionDay.orElse(null);
+        BaseStation lowestProportionBaseStationDay = lowestProportionDay.orElse(null);
+
+        BaseStation highestProportionBaseStationNight = highestProportionNight.orElse(null);
+        BaseStation lowestProportionBaseStationNight = lowestProportionNight.orElse(null);
+
+        List<Integer> dayAmbulanceAllocation = new ArrayList<>(this.getAllocation().getDayShiftAllocation());
+        List<Integer> nightAmbulanceAllocation = new ArrayList<>(this.getAllocation().getNightShiftAllocation());
+
+        dayAmbulanceAllocation.set(dayAmbulanceAllocation.indexOf(highestProportionBaseStationDay.getId()),
+                lowestProportionBaseStationDay.getId());
+        nightAmbulanceAllocation.set(nightAmbulanceAllocation.indexOf(highestProportionBaseStationNight.getId()),
+                lowestProportionBaseStationNight.getId());
+
+        Individual bestNeighbor = List.of(
+                new Individual(List.of(this.getAllocation().getDayShiftAllocation(), nightAmbulanceAllocation)),
+                new Individual(List.of(dayAmbulanceAllocation, this.getAllocation().getNightShiftAllocation())),
+                new Individual(List.of(dayAmbulanceAllocation, nightAmbulanceAllocation)))
+                .stream()
+                .min(Comparator.comparingDouble(Individual::getFitness)).get();
+        return bestNeighbor;
     }
 
     // get most frequent integer value from list
