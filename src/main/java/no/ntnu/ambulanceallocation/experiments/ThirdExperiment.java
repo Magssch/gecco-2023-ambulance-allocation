@@ -117,7 +117,7 @@ public class ThirdExperiment extends Experiment {
                                 simulations.get(simulationPeriod).second())
                         .simulate(allocation);
                 logger.info("{} simulation finished for {}", simulationPeriod, allocationName);
-                periodResponseTimeResults.saveColumn(allocationName, results.values());
+                periodResponseTimeResults.saveColumn(allocationName, results.getResponseTimes());
             });
             periodResponseTimeResults.saveResults("third_experiment_response_times_" + simulationPeriod);
         });
