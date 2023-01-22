@@ -10,7 +10,7 @@ optimizer = "ga"
 
 meta_parameters = {
     "number_of_runs": 1,
-    "running_time": 10,
+    "running_time": 30,
 }
 
 param_grid = {

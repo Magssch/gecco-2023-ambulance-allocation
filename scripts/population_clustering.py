@@ -1,10 +1,20 @@
+import json
 import math
+
+from coordinate_converter import utm_to_ssb_grid_id
 
 POPULATION_STATISTICS_FILE = 'data/population/oslo_akershus_2015_2019.csv'
 GRID_OUTPUT_FILE = 'data/grid_zones.csv'
 BASE_STATIONS_INPUT_FILE = 'data/base_stations.csv'
 BASE_STATIONS_OUTPUT_FILE = 'data/base_stations_with_population.csv'
 YEAR_OF_INTEREST = '2019'
+OD_FILE = 'data/base_station_to_all.json'
+
+
+def load_od():
+    with open(OD_FILE, 'rb') as f:
+        od = json.load(f)
+    return od
 
 
 def load_population_statistics():
@@ -71,7 +81,8 @@ def save_base_stations(header, base_stations):
 def main():
     base_station_header, base_stations = load_base_stations()
     grid_zone_header, population_statistics = load_population_statistics()
-
+    od = load_od()
+    
     for grid_cell in population_statistics:
 
         grid_cell_location = grid_cell[-2:]
@@ -83,7 +94,7 @@ def main():
         for i, base_station in enumerate(base_stations):
 
             base_station_location = base_station[-3:-1]
-            distance = math.dist(base_station_location, grid_cell_location)
+            distance = od[f"{base_station_location[0]}_{base_station_location[1]}"][f"{grid_cell_location[0]}_{grid_cell_location[1]}"][0]
 
             if distance < minimum_distance:
                 minimum_distance = distance
