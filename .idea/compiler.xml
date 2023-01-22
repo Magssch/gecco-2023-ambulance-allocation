@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="ambulance-location-allocation" target="17" />
+      <module name="ambulance-location-allocation" target="19" />
     </bytecodeTargetLevel>
   </component>
 </project>
