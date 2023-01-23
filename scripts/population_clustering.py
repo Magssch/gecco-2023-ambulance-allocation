@@ -7,7 +7,7 @@ POPULATION_STATISTICS_FILE = 'data/population/oslo_akershus_2015_2019.csv'
 GRID_OUTPUT_FILE = 'data/grid_zones.csv'
 BASE_STATIONS_INPUT_FILE = 'data/base_stations.csv'
 BASE_STATIONS_OUTPUT_FILE = 'data/base_stations_with_population.csv'
-YEAR_OF_INTEREST = '2019'
+YEAR_OF_INTEREST = '2017'
 OD_FILE = 'data/base_station_to_all.json'
 
 
