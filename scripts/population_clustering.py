@@ -1,7 +1,4 @@
 import json
-import math
-
-from coordinate_converter import utm_to_ssb_grid_id
 
 POPULATION_STATISTICS_FILE = 'data/population/oslo_akershus_2015_2019.csv'
 GRID_OUTPUT_FILE = 'data/grid_zones.csv'

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,47 +80,6 @@ public class Individual extends Solution {
         newChromosome.set(locus, Utils.randomInt(BaseStation.size()));
     }
 
-    // get most frequent integer value from list
-    private Individual redistributionMutation() {
-        List<Integer> dayAmbulanceAllocation = new ArrayList<>(this.getAllocation().getDayShiftAllocation());
-        List<Integer> nightAmbulanceAllocation = new ArrayList<>(this.getAllocation().getNightShiftAllocation());
-
-        Map<Integer, Long> dayAmbulanceStationFrequency = this.getAllocation().getDayShiftAllocation().stream()
-                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
-        int dayMostFrequent = dayAmbulanceStationFrequency.entrySet().stream()
-                .max(Map.Entry.comparingByValue()).get().getKey();
-        int dayLeastFrequent = dayAmbulanceStationFrequency.entrySet().stream()
-                .min(Map.Entry.comparingByValue()).get().getKey();
-
-        List<Integer> dayNeighboorhoodAllocation1 = new ArrayList<>(dayAmbulanceAllocation);
-        dayNeighboorhoodAllocation1.set(dayAmbulanceAllocation.indexOf(dayMostFrequent), dayLeastFrequent);
-
-        List<Integer> dayNeighboorhoodAllocation2 = new ArrayList<>(dayAmbulanceAllocation);
-        dayNeighboorhoodAllocation2.set(dayAmbulanceAllocation.indexOf(dayLeastFrequent), dayMostFrequent);
-
-        Map<Integer, Long> nightAmbulanceStationFrequency = this.getAllocation().getNightShiftAllocation().stream()
-                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
-        int nightMostFrequent = nightAmbulanceStationFrequency.entrySet().stream()
-                .max(Map.Entry.comparingByValue()).get().getKey();
-        int nightLeastFrequent = nightAmbulanceStationFrequency.entrySet().stream()
-                .min(Map.Entry.comparingByValue()).get().getKey();
-
-        List<Integer> nightNeighboorhoodAllocation1 = new ArrayList<>(nightAmbulanceAllocation);
-        nightNeighboorhoodAllocation1.set(nightAmbulanceAllocation.indexOf(nightMostFrequent), nightLeastFrequent);
-
-        List<Integer> nightNeighboorhoodAllocation2 = new ArrayList<>(nightAmbulanceAllocation);
-        nightNeighboorhoodAllocation2.set(nightAmbulanceAllocation.indexOf(nightLeastFrequent), nightMostFrequent);
-
-        // find neighbor with lowest fitness and return it
-        Individual bestNeighbor = List.of(
-                new Individual(List.of(dayNeighboorhoodAllocation1, nightAmbulanceAllocation)),
-                new Individual(List.of(dayNeighboorhoodAllocation2, nightAmbulanceAllocation)),
-                new Individual(List.of(dayAmbulanceAllocation, nightNeighboorhoodAllocation1)),
-                new Individual(List.of(dayAmbulanceAllocation, nightNeighboorhoodAllocation2))).stream()
-                .min(Comparator.comparingDouble(Individual::getFitness)).get();
-        return bestNeighbor;
-    }
-
     public Tuple<Individual> recombineWith(Individual individual, double crossoverProbability) {
         if (Utils.randomDouble() < crossoverProbability) {
             List<List<Integer>> childA = new ArrayList<>();
@@ -170,25 +128,27 @@ public class Individual extends Solution {
         }
     }
 
+    // TODO: How to decide bounds for randomInt() calls?
     private Individual improve() {
-        return switch (Utils.randomInt(9)) {
-            case 0 ->
-                getBestPopPropFromMaxNeighbor(this.getAllocation().getDayShiftAllocation(), "day", "highest", false);
-            case 1 ->
-                getBestPopPropFromMaxNeighbor(this.getAllocation().getDayShiftAllocation(), "day", "lowest", false);
-            case 2 -> getBestPopPropFromMaxNeighbor(this.getAllocation().getNightShiftAllocation(), "night", "highest",
-                    false);
-            case 3 ->
-                getBestPopPropFromMaxNeighbor(this.getAllocation().getNightShiftAllocation(), "night", "lowest", false);
-            case 4 ->
-                getBestPopPropFromMaxNeighbor(this.getAllocation().getDayShiftAllocation(), "day", "highest", true);
-            case 5 ->
-                getBestPopPropFromMaxNeighbor(this.getAllocation().getDayShiftAllocation(), "day", "lowest", true);
-            case 6 -> getBestPopPropFromMaxNeighbor(this.getAllocation().getNightShiftAllocation(), "night", "highest",
-                    true);
-            case 7 ->
-                getBestPopPropFromMaxNeighbor(this.getAllocation().getNightShiftAllocation(), "night", "lowest", true);
-            case 8 -> getBestPopPropMaxMinNeighbor();
+        return switch (Utils.randomInt(6)) {
+            case 0 -> robinHoodNeighborSearch(Utils.randomInt(5), Utils.randomInt(5), Utils.randomInt(5),
+                    Utils.randomInt(5), false);
+            case 1 -> robinHoodNeighborSearch(Utils.randomInt(5), Utils.randomInt(5), Utils.randomInt(5),
+                    Utils.randomInt(5), true);
+            // Allow full exhaustive chromosome search for lower proportionate base stations
+            // (expensive!):
+            case 2 -> robinHoodNeighborSearch(Utils.randomInt(5), getAllocation().getDayShiftAllocation().size() - 1,
+                    Utils.randomInt(5), getAllocation().getNightShiftAllocation().size() - 1, false);
+            // Allow full exhaustive chromosome search for higher proportionate base
+            // stations (expensive!):
+            case 3 -> robinHoodNeighborSearch(getAllocation().getDayShiftAllocation().size() - 1, Utils.randomInt(5),
+                    getAllocation().getNightShiftAllocation().size() - 1, Utils.randomInt(5), false);
+            // Allow full chromosome search for lower proportionate base stations (greedy):
+            case 4 -> robinHoodNeighborSearch(Utils.randomInt(5), getAllocation().getDayShiftAllocation().size() - 1,
+                    Utils.randomInt(5), getAllocation().getNightShiftAllocation().size() - 1, true);
+            // Allow full chromosome search for higher proportionate base stations (greedy):
+            case 5 -> robinHoodNeighborSearch(getAllocation().getDayShiftAllocation().size() - 1, Utils.randomInt(5),
+                    getAllocation().getNightShiftAllocation().size() - 1, Utils.randomInt(5), true);
             default -> throw new IllegalArgumentException("Unexpected value");
         };
     }
@@ -200,82 +160,50 @@ public class Individual extends Solution {
         return new Individual(bestNeighborhood);
     }
 
-    private Individual getBestPopPropFromMaxNeighbor(List<Integer> chromosome, String shift, String from,
-            boolean earlyStopping) {
-        Map<Integer, Long> ambulanceStationFrequency = chromosome.stream()
-                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+    private Individual robinHoodNeighborSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
+            boolean greedy) {
+        List<BaseStation> baseStationDayAmbulanceProportionStream = this.getAllocation()
+                .getBaseStationDayAmbulanceProportionList();
+        List<BaseStation> baseStationNightAmbulanceProportionStream = this.getAllocation()
+                .getBaseStationNightAmbulanceProportionList();
 
-        BaseStation fromBaseStation = (from == "highest" ? ambulanceStationFrequency.keySet().stream()
-                .map(BaseStation::get)
-                .max(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
-                        / ambulanceStationFrequency.get(baseStation.getId())))
-                : ambulanceStationFrequency.keySet().stream()
-                        .map(BaseStation::get)
-                        .min(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
-                                / ambulanceStationFrequency.get(baseStation.getId()))))
-                .orElse(null);
+        List<List<Integer>> daySubChromosomeNeighbors = new ArrayList<>();
+        daySubChromosomeNeighbors.add(this.getAllocation().getDayShiftAllocation());
+        List<List<Integer>> nightSubChromosomeNeighbors = new ArrayList<>();
+        nightSubChromosomeNeighbors.add(this.getAllocation().getNightShiftAllocation());
+
+        baseStationDayAmbulanceProportionStream.subList(0, dayHighestN - 1).forEach(highBaseStation -> {
+            baseStationDayAmbulanceProportionStream.subList(baseStationDayAmbulanceProportionStream.size() - dayLowestN,
+                    baseStationDayAmbulanceProportionStream.size() - 1).forEach(lowBaseStation -> {
+                        List<Integer> newChromosome = new ArrayList<>(getAllocation().getDayShiftAllocation());
+                        newChromosome.set(newChromosome.indexOf(highBaseStation.getId()), lowBaseStation.getId());
+                        daySubChromosomeNeighbors.add(newChromosome);
+                    });
+        });
+
+        baseStationNightAmbulanceProportionStream.subList(0, nightHighestN - 1).forEach(highBaseStation -> {
+            baseStationNightAmbulanceProportionStream
+                    .subList(baseStationNightAmbulanceProportionStream.size() - nightLowestN,
+                            baseStationNightAmbulanceProportionStream.size() - 1)
+                    .forEach(lowBaseStation -> {
+                        List<Integer> newChromosome = new ArrayList<>(getAllocation().getNightShiftAllocation());
+                        newChromosome.set(newChromosome.indexOf(highBaseStation.getId()), lowBaseStation.getId());
+                        nightSubChromosomeNeighbors.add(newChromosome);
+                    });
+        });
 
         List<Individual> neighboorhood = new ArrayList<>();
-        for (Integer baseStationId : chromosome.stream().distinct().toList()) {
-            if (!baseStationId.equals(fromBaseStation.getId())) {
-                List<Integer> newChromosome = new ArrayList<>(chromosome);
-                newChromosome.set(chromosome.indexOf(fromBaseStation.getId()), baseStationId);
-                Individual neighbor = new Individual(
-                        shift.equals("day")
-                                ? List.of(newChromosome, this.getAllocation().getNightShiftAllocation())
-                                : List.of(this.getAllocation().getDayShiftAllocation(), newChromosome));
-                if (earlyStopping && neighbor.getFitness() <= this.getFitness()) {
+        for (List<Integer> daySubChromosomeNeighbor : daySubChromosomeNeighbors) {
+            for (List<Integer> nightSubChromosomeNeighbor : nightSubChromosomeNeighbors) {
+                Individual neighbor = new Individual(List.of(daySubChromosomeNeighbor, nightSubChromosomeNeighbor));
+                if (greedy && neighbor.getFitness() <= this.getFitness()) {
                     return neighbor;
+                } else {
+                    neighboorhood.add(neighbor);
                 }
-                neighboorhood.add(neighbor);
             }
         }
+
         return neighboorhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
     }
-
-    private Individual getBestPopPropMaxMinNeighbor() {
-        Map<Integer, Long> dayAmbulanceStationFrequency = this.getAllocation().getDayShiftAllocation().stream()
-                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
-        Map<Integer, Long> nightAmbulanceStationFrequency = this.getAllocation().getNightShiftAllocation().stream()
-                .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
-
-        BaseStation highestProportionBaseStationDay = dayAmbulanceStationFrequency.keySet().stream()
-                .map(BaseStation::get)
-                .max(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
-                        / dayAmbulanceStationFrequency.get(baseStation.getId())))
-                .orElse(null);
-        BaseStation lowestProportionBaseStationDay = dayAmbulanceStationFrequency.keySet().stream()
-                .map(BaseStation::get)
-                .min(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
-                        / dayAmbulanceStationFrequency.get(baseStation.getId())))
-                .orElse(null);
-
-        BaseStation highestProportionBaseStationNight = nightAmbulanceStationFrequency.keySet().stream()
-                .map(BaseStation::get)
-                .max(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
-                        / nightAmbulanceStationFrequency.get(baseStation.getId())))
-                .orElse(null);
-        BaseStation lowestProportionBaseStationNight = nightAmbulanceStationFrequency.keySet().stream()
-                .map(BaseStation::get)
-                .min(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
-                        / nightAmbulanceStationFrequency.get(baseStation.getId())))
-                .orElse(null);
-
-        List<Integer> dayAmbulanceAllocation = new ArrayList<>(this.getAllocation().getDayShiftAllocation());
-        List<Integer> nightAmbulanceAllocation = new ArrayList<>(this.getAllocation().getNightShiftAllocation());
-
-        dayAmbulanceAllocation.set(dayAmbulanceAllocation.indexOf(highestProportionBaseStationDay.getId()),
-                lowestProportionBaseStationDay.getId());
-        nightAmbulanceAllocation.set(nightAmbulanceAllocation.indexOf(highestProportionBaseStationNight.getId()),
-                lowestProportionBaseStationNight.getId());
-
-        Individual bestNeighbor = List.of(
-                new Individual(List.of(this.getAllocation().getDayShiftAllocation(), nightAmbulanceAllocation)),
-                new Individual(List.of(dayAmbulanceAllocation, this.getAllocation().getNightShiftAllocation())),
-                new Individual(List.of(dayAmbulanceAllocation, nightAmbulanceAllocation)))
-                .stream()
-                .min(Comparator.comparingDouble(Individual::getFitness)).get();
-        return bestNeighbor;
-    }
-
 }

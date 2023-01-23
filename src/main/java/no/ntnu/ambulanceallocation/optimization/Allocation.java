@@ -3,8 +3,11 @@ package no.ntnu.ambulanceallocation.optimization;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import no.ntnu.ambulanceallocation.simulation.BaseStation;
 
 public record Allocation(List<List<Integer>> allocation) implements Iterable<List<Integer>> {
 
@@ -58,5 +61,37 @@ public record Allocation(List<List<Integer>> allocation) implements Iterable<Lis
 
     public Stream<List<Integer>> stream() {
         return allocation.stream();
+    }
+
+    public Map<Integer, Long> getDayAmbulanceStationFrequency() {
+        return getDayShiftAllocation().stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+    }
+
+    public Map<Integer, Long> getNightAmbulanceStationFrequency() {
+        return getNightShiftAllocation().stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+    }
+
+    private Stream<BaseStation> getBaseStationAmbulanceProportionStream(
+            Map<Integer, Long> ambulanceStationFrequency) {
+        return ambulanceStationFrequency.keySet().stream()
+                .map(BaseStation::get)
+                .sorted(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
+                        / ambulanceStationFrequency.get(baseStation.getId())))
+    }
+
+    public Stream<BaseStation> getBaseStationDayAmbulanceProportionStream() {
+        return getBaseStationAmbulanceProportionStream(getDayAmbulanceStationFrequency());
+    }
+
+    public Stream<BaseStation> getBaseStationNightAmbulanceProportionStream() {
+        return getBaseStationAmbulanceProportionStream(getNightAmbulanceStationFrequency());
+    }
+
+    public List<BaseStation> getBaseStationDayAmbulanceProportionList() {
+        return getBaseStationDayAmbulanceProportionStream().toList();
+    }
+
+    public List<BaseStation> getBaseStationNightAmbulanceProportionList() {
+        return getBaseStationNightAmbulanceProportionStream().toList();
     }
 }
