@@ -131,24 +131,28 @@ public class Individual extends Solution {
     // TODO: How to decide bounds for randomInt() calls?
     private Individual improve() {
         return switch (Utils.randomInt(6)) {
-            case 0 -> robinHoodNeighborSearch(Utils.randomInt(5), Utils.randomInt(5), Utils.randomInt(5),
+            case 0 -> robinHoodNeighborhoodSearch(Utils.randomInt(5), Utils.randomInt(5), Utils.randomInt(5),
                     Utils.randomInt(5), false);
-            case 1 -> robinHoodNeighborSearch(Utils.randomInt(5), Utils.randomInt(5), Utils.randomInt(5),
+            case 1 -> robinHoodNeighborhoodSearch(Utils.randomInt(5), Utils.randomInt(5), Utils.randomInt(5),
                     Utils.randomInt(5), true);
             // Allow full exhaustive chromosome search for lower proportionate base stations
             // (expensive!):
-            case 2 -> robinHoodNeighborSearch(Utils.randomInt(5), getAllocation().getDayShiftAllocation().size() - 1,
-                    Utils.randomInt(5), getAllocation().getNightShiftAllocation().size() - 1, false);
+            case 2 ->
+                robinHoodNeighborhoodSearch(Utils.randomInt(5), getAllocation().getDayShiftAllocation().size() - 1,
+                        Utils.randomInt(5), getAllocation().getNightShiftAllocation().size() - 1, false);
             // Allow full exhaustive chromosome search for higher proportionate base
             // stations (expensive!):
-            case 3 -> robinHoodNeighborSearch(getAllocation().getDayShiftAllocation().size() - 1, Utils.randomInt(5),
-                    getAllocation().getNightShiftAllocation().size() - 1, Utils.randomInt(5), false);
+            case 3 ->
+                robinHoodNeighborhoodSearch(getAllocation().getDayShiftAllocation().size() - 1, Utils.randomInt(5),
+                        getAllocation().getNightShiftAllocation().size() - 1, Utils.randomInt(5), false);
             // Allow full chromosome search for lower proportionate base stations (greedy):
-            case 4 -> robinHoodNeighborSearch(Utils.randomInt(5), getAllocation().getDayShiftAllocation().size() - 1,
-                    Utils.randomInt(5), getAllocation().getNightShiftAllocation().size() - 1, true);
+            case 4 ->
+                robinHoodNeighborhoodSearch(Utils.randomInt(5), getAllocation().getDayShiftAllocation().size() - 1,
+                        Utils.randomInt(5), getAllocation().getNightShiftAllocation().size() - 1, true);
             // Allow full chromosome search for higher proportionate base stations (greedy):
-            case 5 -> robinHoodNeighborSearch(getAllocation().getDayShiftAllocation().size() - 1, Utils.randomInt(5),
-                    getAllocation().getNightShiftAllocation().size() - 1, Utils.randomInt(5), true);
+            case 5 ->
+                robinHoodNeighborhoodSearch(getAllocation().getDayShiftAllocation().size() - 1, Utils.randomInt(5),
+                        getAllocation().getNightShiftAllocation().size() - 1, Utils.randomInt(5), true);
             default -> throw new IllegalArgumentException("Unexpected value");
         };
     }
@@ -160,7 +164,7 @@ public class Individual extends Solution {
         return new Individual(bestNeighborhood);
     }
 
-    private Individual robinHoodNeighborSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
+    private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
             boolean greedy) {
         List<BaseStation> baseStationDayAmbulanceProportionStream = this.getAllocation()
                 .getBaseStationDayAmbulanceProportionList();

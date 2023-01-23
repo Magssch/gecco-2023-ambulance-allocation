@@ -3,7 +3,6 @@ package no.ntnu.ambulanceallocation.optimization;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
@@ -88,10 +87,6 @@ public abstract class Solution implements Comparable<Solution> {
         }
         this.allocation = newAllocation;
         hasAllocationChanged = true;
-    }
-
-    public boolean satisfiesConstraints(List<Predicate<Solution>> constraints) {
-        return constraints.stream().reduce(predicate -> true, Predicate::and).test(this);
     }
 
     @Override

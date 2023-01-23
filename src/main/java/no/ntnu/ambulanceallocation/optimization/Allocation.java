@@ -1,6 +1,7 @@
 package no.ntnu.ambulanceallocation.optimization;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +77,7 @@ public record Allocation(List<List<Integer>> allocation) implements Iterable<Lis
         return ambulanceStationFrequency.keySet().stream()
                 .map(BaseStation::get)
                 .sorted(Comparator.comparingDouble(baseStation -> (double) baseStation.getPopulation()
-                        / ambulanceStationFrequency.get(baseStation.getId())))
+                        / ambulanceStationFrequency.get(baseStation.getId())));
     }
 
     public Stream<BaseStation> getBaseStationDayAmbulanceProportionStream() {

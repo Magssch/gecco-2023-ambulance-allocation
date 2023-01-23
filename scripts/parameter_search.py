@@ -10,7 +10,8 @@ optimizer = "ga"
 
 meta_parameters = {
     "number_of_runs": 1,
-    "running_time": 30,
+    "running_time": 4,
+    "max_permutations": 5,
 }
 
 param_grid = {
@@ -23,10 +24,10 @@ param_grid = {
     "improve_probability": [0.05, 0.1, 0.2, 0.3] if optimizer == "ma" else [0.0],
 }
 
-print("Starting parameter search... Will run " + str(len(list(product(*param_grid.values())))) + " experiments.")
-
 # Create a list of all permutations in the parameter grid
-parameter_permutations_list = list(product(*param_grid.values()))[0:2]
+parameter_permutations_list = list(product(*param_grid.values()))[:meta_parameters["max_permutations"]]
+
+print("Starting parameter search... Will run " + str(len(parameter_permutations_list)) + " experiments.")
 
 # Convert the list of permutations to a comma and semicolon-separated string
 parameter_permutations = ";".join([",".join([str(val) for val in single_run]) for single_run in parameter_permutations_list])
