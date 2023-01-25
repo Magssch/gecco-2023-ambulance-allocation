@@ -95,4 +95,10 @@ public record Allocation(List<List<Integer>> allocation) implements Iterable<Lis
     public List<BaseStation> getBaseStationNightAmbulanceProportionList() {
         return getBaseStationNightAmbulanceProportionStream().toList();
     }
+
+    @Override
+    public String toString() {
+        return String.format("Day shift: %s\nNight shift: %s", getDayShiftAllocation(), getNightShiftAllocation());
+    }
+
 }

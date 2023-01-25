@@ -49,8 +49,8 @@ public class SecondExperiment extends Experiment {
 
     private void runStochasticExperiment(Optimizer optimizer) {
         String optimizerName = optimizer.getAbbreviation();
-        double overallBestFitness = -1.0;
-        Allocation overallBestAllocation = new Allocation();
+        double overallBestFitness = Double.MAX_VALUE;
+        Allocation overallBestAllocation = null;
         Result overallBestRunStatistics = new Result();
 
         List<Double> bestFitnessAtTermination = new ArrayList<>();
