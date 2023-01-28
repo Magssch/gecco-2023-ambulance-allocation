@@ -148,12 +148,6 @@ public class Individual extends Solution {
     }
 
     // Memetic method
-    private Individual getBestNeighborSLS(NeighborhoodFunction neighborhoodFunction) {
-        SlsSolution slsSolution = new SlsSolution(this);
-        SlsSolution bestNeighborhood = slsSolution.greedyStep(neighborhoodFunction);
-        return new Individual(bestNeighborhood);
-    }
-
     private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
             boolean greedy) {
         List<BaseStation> baseStationDayAmbulanceProportionList = this.getAllocation()

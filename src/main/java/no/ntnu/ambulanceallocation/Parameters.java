@@ -33,6 +33,7 @@ public final class Parameters {
     public static final int MAX_TRIES = 999;
     public static final double RESTART_PROBABILITY = 0.025;
     public static final double NOISE_PROBABILITY = 0.8;
+    public static final int LAZY_NEIGHBOURHOOD_SIZE = 5;
 
     // Genetic & Memetic Algorithm
     public static Initializer INITIALIZER = new Random();

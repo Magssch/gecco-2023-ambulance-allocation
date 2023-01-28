@@ -51,10 +51,11 @@ public class SlsSolution extends Solution {
         copy(randomNeighbor);
     }
 
-    public SlsSolution greedyStep(NeighborhoodFunction neighborhoodFunction) {
+    public SlsSolution greedyStep(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
         List<SlsSolution> neighborhood = switch (neighborhoodFunction) {
             case FORWARD -> getForwardNeighborhood();
             case HAMMING -> getHammingNeighborhood();
+            case LAZY -> getLazyNeighborhood(neighborhoodSize);
         };
         neighborhood.parallelStream().forEach(Solution::getFitness);
         Collections.sort(neighborhood);
@@ -89,6 +90,16 @@ public class SlsSolution extends Solution {
                     }
                 }
             }
+        }
+        return neighborhood;
+    }
+
+    private List<SlsSolution> getLazyNeighborhood(int neighborhoodSize) {
+        List<SlsSolution> neighborhood = new ArrayList<>();
+        for (int attempt = 0; attempt < neighborhoodSize; attempt++) {
+            int randomVariableSet = Utils.randomInt(getAllocation().size());
+            int randomVariable = Utils.randomIndexOf(getAllocation().get(randomVariableSet));
+            neighborhood.add(new SlsSolution(this, randomVariableSet, randomVariable));
         }
         return neighborhood;
     }

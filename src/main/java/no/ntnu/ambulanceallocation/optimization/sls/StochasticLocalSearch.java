@@ -85,7 +85,7 @@ public class StochasticLocalSearch implements Optimizer {
                         solution.noiseStep();
                     } else {
                         logger.info("{} flips: {} (g)", getAbbreviation(), flips);
-                        solution.greedyStep(neighborhoodFunction);
+                        solution.greedyStep(neighborhoodFunction, Parameters.LAZY_NEIGHBOURHOOD_SIZE);
                     }
                 }
 
@@ -119,6 +119,7 @@ public class StochasticLocalSearch implements Optimizer {
         return switch (neighborhoodFunction) {
             case FORWARD -> "SLS";
             case HAMMING -> "HSLS";
+            case LAZY -> "LazySLS";
         };
     }
 
