@@ -10,11 +10,15 @@ import no.ntnu.ambulanceallocation.optimization.initializer.Random;
 import no.ntnu.ambulanceallocation.simulation.BaseStation;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SlsSolution extends Solution {
 
     private static final Initializer initializer = new Random();
     private static final int MAX_VALUE = BaseStation.size();
+
+    private final Logger logger = LoggerFactory.getLogger(SlsSolution.class);
 
     public SlsSolution() {
         super(initializer);
@@ -57,6 +61,7 @@ public class SlsSolution extends Solution {
             case HAMMING -> getHammingNeighborhood();
             case LAZY -> getLazyNeighborhood(neighborhoodSize);
         };
+        logger.info("Neighbourhood size was: {}", neighborhood.size());
         neighborhood.parallelStream().forEach(Solution::getFitness);
         Collections.sort(neighborhood);
         SlsSolution bestNeighbor = neighborhood.get(0);

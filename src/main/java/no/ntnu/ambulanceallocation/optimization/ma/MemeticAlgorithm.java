@@ -124,6 +124,7 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
         return switch (neighborhoodFunction) {
             case FORWARD -> "FMA";
             case HAMMING -> "HMA";
+            case LAZY -> "LMA";
         };
     }
 

@@ -30,6 +30,7 @@ public class StochasticLocalSearch implements Optimizer {
     private final List<Double> best = new ArrayList<>();
 
     private final NeighborhoodFunction neighborhoodFunction;
+    private final int neighborhoodSize;
 
     private final Config config;
 
@@ -38,6 +39,7 @@ public class StochasticLocalSearch implements Optimizer {
 
     public StochasticLocalSearch(NeighborhoodFunction neighborhoodFunction) {
         this.neighborhoodFunction = neighborhoodFunction;
+        this.neighborhoodSize = Parameters.LAZY_NEIGHBOURHOOD_SIZE;
         this.config = Config.defaultConfig();
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
@@ -45,7 +47,16 @@ public class StochasticLocalSearch implements Optimizer {
 
     public StochasticLocalSearch(NeighborhoodFunction neighborhoodFunction, Config config) {
         this.neighborhoodFunction = neighborhoodFunction;
+        this.neighborhoodSize = Parameters.LAZY_NEIGHBOURHOOD_SIZE;
         this.config = config;
+        bestSolution = new SlsSolution(config);
+        solution = new SlsSolution(config);
+    }
+
+    public StochasticLocalSearch(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
+        this.neighborhoodFunction = neighborhoodFunction;
+        this.neighborhoodSize = neighborhoodSize;
+        this.config = Config.defaultConfig();
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
     }
@@ -85,7 +96,7 @@ public class StochasticLocalSearch implements Optimizer {
                         solution.noiseStep();
                     } else {
                         logger.info("{} flips: {} (g)", getAbbreviation(), flips);
-                        solution.greedyStep(neighborhoodFunction, Parameters.LAZY_NEIGHBOURHOOD_SIZE);
+                        solution.greedyStep(neighborhoodFunction, neighborhoodSize);
                     }
                 }
 
@@ -117,9 +128,9 @@ public class StochasticLocalSearch implements Optimizer {
             return "SLS";
         }
         return switch (neighborhoodFunction) {
-            case FORWARD -> "SLS";
+            case FORWARD -> "FSLS";
             case HAMMING -> "HSLS";
-            case LAZY -> "LazySLS";
+            case LAZY -> String.format("LazySLS_%d", neighborhoodSize);
         };
     }
 
