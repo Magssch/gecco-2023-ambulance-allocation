@@ -6,7 +6,7 @@ import pandas as pd
 
 # Define the parameters for the grid search
 
-optimizer = "ga"
+optimizer = "ma"
 
 meta_parameters = {
     "number_of_runs": 1,

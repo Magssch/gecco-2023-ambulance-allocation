@@ -37,11 +37,9 @@ public class Individual extends Solution {
             List<Integer> newChromosome = new ArrayList<>(chromosome);
             for (int locus = 0; locus < newChromosome.size(); locus++) {
                 if (Utils.randomDouble() < mutationProbability) {
-                    switch (Utils.randomInt(3)) {
+                    switch (Utils.randomInt(2)) {
                         case 0 -> swapMutation(locus, newChromosome);
                         case 1 -> bitFlipMutation(locus, newChromosome);
-                        case 2 -> inversionMutation(locus, newChromosome);
-                        // case 3 -> redistributionMutation(locus, newChromosome);
                     }
                 }
             }
@@ -65,15 +63,6 @@ public class Individual extends Solution {
         // Swap the allocation for the two base stations
         Collections.replaceAll(newChromosome, otherBaseStationId, baseStationId);
         Collections.replaceAll(newChromosome, -1, otherBaseStationId);
-    }
-
-    public void inversionMutation(int locus, List<Integer> newChromosome) {
-        // Reverse a random subset of the chromosome between two random indices
-        int randomLocus = Utils.randomInt(newChromosome.size());
-        int start = Math.min(locus, randomLocus);
-        int end = Math.max(locus, randomLocus);
-        Collections.reverse(newChromosome.subList(start, end));
-
     }
 
     public void bitFlipMutation(int locus, List<Integer> newChromosome) {
@@ -130,6 +119,7 @@ public class Individual extends Solution {
 
     // TODO: How to decide bounds for randomInt() calls?
     private Individual improve() {
+        int numBaseStations = BaseStation.size();
         return switch (Utils.randomInt(6)) {
             case 0 -> robinHoodNeighborhoodSearch(Utils.randomInt(5), Utils.randomInt(5), Utils.randomInt(5),
                     Utils.randomInt(5), false);
@@ -138,21 +128,21 @@ public class Individual extends Solution {
             // Allow full exhaustive chromosome search for lower proportionate base stations
             // (expensive!):
             case 2 ->
-                robinHoodNeighborhoodSearch(Utils.randomInt(5), getAllocation().getDayShiftAllocation().size() - 1,
-                        Utils.randomInt(5), getAllocation().getNightShiftAllocation().size() - 1, false);
+                robinHoodNeighborhoodSearch(Utils.randomInt(5), -1,
+                        Utils.randomInt(5), -1, false);
             // Allow full exhaustive chromosome search for higher proportionate base
             // stations (expensive!):
             case 3 ->
-                robinHoodNeighborhoodSearch(getAllocation().getDayShiftAllocation().size() - 1, Utils.randomInt(5),
-                        getAllocation().getNightShiftAllocation().size() - 1, Utils.randomInt(5), false);
+                robinHoodNeighborhoodSearch(-1, Utils.randomInt(5),
+                        -1, Utils.randomInt(5), false);
             // Allow full chromosome search for lower proportionate base stations (greedy):
             case 4 ->
-                robinHoodNeighborhoodSearch(Utils.randomInt(5), getAllocation().getDayShiftAllocation().size() - 1,
-                        Utils.randomInt(5), getAllocation().getNightShiftAllocation().size() - 1, true);
+                robinHoodNeighborhoodSearch(Utils.randomInt(5), -1,
+                        Utils.randomInt(5), -1, true);
             // Allow full chromosome search for higher proportionate base stations (greedy):
             case 5 ->
-                robinHoodNeighborhoodSearch(getAllocation().getDayShiftAllocation().size() - 1, Utils.randomInt(5),
-                        getAllocation().getNightShiftAllocation().size() - 1, Utils.randomInt(5), true);
+                robinHoodNeighborhoodSearch(-1, Utils.randomInt(5),
+                        -1, Utils.randomInt(5), true);
             default -> throw new IllegalArgumentException("Unexpected value");
         };
     }
@@ -166,35 +156,48 @@ public class Individual extends Solution {
 
     private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
             boolean greedy) {
-        List<BaseStation> baseStationDayAmbulanceProportionStream = this.getAllocation()
+        List<BaseStation> baseStationDayAmbulanceProportionList = this.getAllocation()
                 .getBaseStationDayAmbulanceProportionList();
-        List<BaseStation> baseStationNightAmbulanceProportionStream = this.getAllocation()
+        List<BaseStation> baseStationNightAmbulanceProportionList = this.getAllocation()
                 .getBaseStationNightAmbulanceProportionList();
+
+        if (dayHighestN == -1) {
+            dayHighestN = baseStationDayAmbulanceProportionList.size();
+        }
+        if (dayLowestN == -1) {
+            dayLowestN = baseStationDayAmbulanceProportionList.size();
+        }
+        if (nightHighestN == -1) {
+            nightHighestN = baseStationNightAmbulanceProportionList.size();
+        }
+        if (nightLowestN == -1) {
+            nightLowestN = baseStationNightAmbulanceProportionList.size();
+        }
 
         List<List<Integer>> daySubChromosomeNeighbors = new ArrayList<>();
         daySubChromosomeNeighbors.add(this.getAllocation().getDayShiftAllocation());
         List<List<Integer>> nightSubChromosomeNeighbors = new ArrayList<>();
         nightSubChromosomeNeighbors.add(this.getAllocation().getNightShiftAllocation());
 
-        baseStationDayAmbulanceProportionStream.subList(0, dayHighestN - 1).forEach(highBaseStation -> {
-            baseStationDayAmbulanceProportionStream.subList(baseStationDayAmbulanceProportionStream.size() - dayLowestN,
-                    baseStationDayAmbulanceProportionStream.size() - 1).forEach(lowBaseStation -> {
-                        List<Integer> newChromosome = new ArrayList<>(getAllocation().getDayShiftAllocation());
-                        newChromosome.set(newChromosome.indexOf(highBaseStation.getId()), lowBaseStation.getId());
-                        daySubChromosomeNeighbors.add(newChromosome);
-                    });
-        });
+        for (BaseStation highStation : baseStationDayAmbulanceProportionList.subList(0, dayHighestN)) {
+            for (BaseStation lowStation : baseStationDayAmbulanceProportionList.subList(
+                    baseStationDayAmbulanceProportionList.size() - dayLowestN,
+                    baseStationDayAmbulanceProportionList.size())) {
+                List<Integer> newChromosome = new ArrayList<>(getAllocation().getDayShiftAllocation());
+                newChromosome.set(newChromosome.indexOf(highStation.getId()), lowStation.getId());
+                daySubChromosomeNeighbors.add(newChromosome);
+            }
+        }
 
-        baseStationNightAmbulanceProportionStream.subList(0, nightHighestN - 1).forEach(highBaseStation -> {
-            baseStationNightAmbulanceProportionStream
-                    .subList(baseStationNightAmbulanceProportionStream.size() - nightLowestN,
-                            baseStationNightAmbulanceProportionStream.size() - 1)
-                    .forEach(lowBaseStation -> {
-                        List<Integer> newChromosome = new ArrayList<>(getAllocation().getNightShiftAllocation());
-                        newChromosome.set(newChromosome.indexOf(highBaseStation.getId()), lowBaseStation.getId());
-                        nightSubChromosomeNeighbors.add(newChromosome);
-                    });
-        });
+        for (BaseStation highStation : baseStationNightAmbulanceProportionList.subList(0, nightHighestN)) {
+            for (BaseStation lowStation : baseStationNightAmbulanceProportionList.subList(
+                    baseStationNightAmbulanceProportionList.size() - nightLowestN,
+                    baseStationNightAmbulanceProportionList.size())) {
+                List<Integer> newChromosome = new ArrayList<>(getAllocation().getNightShiftAllocation());
+                newChromosome.set(newChromosome.indexOf(highStation.getId()), lowStation.getId());
+                nightSubChromosomeNeighbors.add(newChromosome);
+            }
+        }
 
         List<Individual> neighboorhood = new ArrayList<>();
         for (List<Integer> daySubChromosomeNeighbor : daySubChromosomeNeighbors) {
