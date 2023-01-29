@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
 import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
-import no.ntnu.ambulanceallocation.optimization.sls.SlsSolution;
 import no.ntnu.ambulanceallocation.simulation.BaseStation;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Tuple;
@@ -119,30 +120,32 @@ public class Individual extends Solution {
 
     // TODO: How to decide bounds for randomInt() calls?
     private Individual improve() {
-        int numBaseStations = BaseStation.size();
-        return switch (Utils.randomInt(6)) {
-            case 0 -> robinHoodNeighborhoodSearch(Utils.randomInt(5), Utils.randomInt(5), Utils.randomInt(5),
-                    Utils.randomInt(5), false);
-            case 1 -> robinHoodNeighborhoodSearch(Utils.randomInt(5), Utils.randomInt(5), Utils.randomInt(5),
-                    Utils.randomInt(5), true);
+        return switch (Utils.randomInt(3)) {
+            // case 0 -> robinHoodNeighborhoodSearch(Utils.randomInt(3)+1,
+            // Utils.randomInt(3)+1,
+            // Utils.randomInt(3)+1,
+            // Utils.randomInt(3)+1, false);
+            case 0 ->
+                robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, Utils.randomInt(3) + 1,
+                        Utils.randomInt(3) + 1, true);
             // Allow full exhaustive chromosome search for lower proportionate base stations
             // (expensive!):
-            case 2 ->
-                robinHoodNeighborhoodSearch(Utils.randomInt(5), -1,
-                        Utils.randomInt(5), -1, false);
-            // Allow full exhaustive chromosome search for higher proportionate base
-            // stations (expensive!):
-            case 3 ->
-                robinHoodNeighborhoodSearch(-1, Utils.randomInt(5),
-                        -1, Utils.randomInt(5), false);
+            // case 2 ->
+            // robinHoodNeighborhoodSearch(Utils.randomInt(3)+1, -1,
+            // Utils.randomInt(3)+1, -1, false);
+            // // Allow full exhaustive chromosome search for higher proportionate base
+            // // stations (expensive!):
+            // case 3 ->
+            // robinHoodNeighborhoodSearch(-1, Utils.randomInt(3)+1,
+            // -1, Utils.randomInt(3)+1, false);
             // Allow full chromosome search for lower proportionate base stations (greedy):
-            case 4 ->
-                robinHoodNeighborhoodSearch(Utils.randomInt(5), -1,
-                        Utils.randomInt(5), -1, true);
+            case 1 ->
+                robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, -1,
+                        Utils.randomInt(3) + 1, -1, true);
             // Allow full chromosome search for higher proportionate base stations (greedy):
-            case 5 ->
-                robinHoodNeighborhoodSearch(-1, Utils.randomInt(5),
-                        -1, Utils.randomInt(5), true);
+            case 2 ->
+                robinHoodNeighborhoodSearch(-1, Utils.randomInt(3) + 1,
+                        -1, Utils.randomInt(3) + 1, true);
             default -> throw new IllegalArgumentException("Unexpected value");
         };
     }
@@ -150,6 +153,7 @@ public class Individual extends Solution {
     // Memetic method
     private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
             boolean greedy) {
+
         List<BaseStation> baseStationDayAmbulanceProportionList = this.getAllocation()
                 .getBaseStationDayAmbulanceProportionList();
         List<BaseStation> baseStationNightAmbulanceProportionList = this.getAllocation()
@@ -192,15 +196,27 @@ public class Individual extends Solution {
                 nightSubChromosomeNeighbors.add(newChromosome);
             }
         }
-
+        int neighborhoodSize = daySubChromosomeNeighbors.size() * nightSubChromosomeNeighbors.size();
+        List<Integer> randomSubset = new ArrayList<>();
+        if (neighborhoodSize > Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE) {
+            randomSubset = ThreadLocalRandom.current().ints(0, neighborhoodSize).distinct()
+                    .limit(Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE).boxed()
+                    .collect(Collectors.toList());
+        }
         List<Individual> neighboorhood = new ArrayList<>();
-        for (List<Integer> daySubChromosomeNeighbor : daySubChromosomeNeighbors) {
-            for (List<Integer> nightSubChromosomeNeighbor : nightSubChromosomeNeighbors) {
-                Individual neighbor = new Individual(List.of(daySubChromosomeNeighbor, nightSubChromosomeNeighbor));
-                if (greedy && neighbor.getFitness() <= this.getFitness()) {
-                    return neighbor;
-                } else {
-                    neighboorhood.add(neighbor);
+        for (int i = 0; i < daySubChromosomeNeighbors.size(); i++) {
+            for (int j = 0; j < nightSubChromosomeNeighbors.size(); j++) {
+                if (neighborhoodSize <= Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE || randomSubset.contains(i * j)) {
+                    Individual neighbor = new Individual(
+                            List.of(daySubChromosomeNeighbors.get(i), nightSubChromosomeNeighbors.get(j)));
+                    if (neighbor == this) {
+                        throw new IllegalArgumentException("Neighbor is not a neighbor!");
+                    }
+                    if (greedy && neighbor.getFitness() <= this.getFitness()) {
+                        return neighbor;
+                    } else {
+                        neighboorhood.add(neighbor);
+                    }
                 }
             }
         }

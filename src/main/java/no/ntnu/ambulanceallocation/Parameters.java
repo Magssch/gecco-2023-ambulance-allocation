@@ -45,6 +45,9 @@ public final class Parameters {
 
     public static double CROSSOVER_PROBABILITY = 0.2;
     public static double MUTATION_PROBABILITY = 0.05;
-    public static double IMPROVE_PROBABILITY = 0.25;
+
+    // MA specific
+    public static double IMPROVE_PROBABILITY = 0.1;
+    public static int LOCAL_NEIGHBORHOOD_MAX_SIZE = 100;
 
 }
