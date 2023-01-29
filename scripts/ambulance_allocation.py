@@ -34,14 +34,14 @@ def plot() -> None:
             if experiment_name_ending == 'allocations.csv':
                 experiments.append(os.path.join(root, file))
 
+    grids = process_grids()
+    base_stations = process_base_stations()
+
     for experiment in experiments:
         allocations = pd.read_csv(experiment)
         for (strategy_name, allocation) in allocations.items():
             print(f'Visualizing {strategy_name}')
             allocation_counts = Counter(allocation.values.tolist())
-
-            grids = process_grids()
-            base_stations = process_base_stations()
 
             features = geojson_tools.dataframe_to_squares(grids)
             geojson_tools.export_features(features, 'data/grid.geojson')
