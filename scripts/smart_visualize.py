@@ -1,7 +1,17 @@
 import os
+
 import pandas as pd
+
 from common import SIMULATION_FOLDER, VISUALIZATION_FOLDER, ensure_folder_exists
-from visualize import regular_plot, sorted_plot, visualize_sls_run, visualize_ga_run
+from save_statistics import save_aggregated_allocations, save_statistics
+from visualize import regular_plot, sorted_plot, visualize_sls_run, visualize_ga_run, plot_box_plot
+
+
+def split_result_name(result_name: str) -> tuple[str, str]:
+    index = result_name.index("experiment") + len("experiment")
+    experiment_name = result_name[:index]
+    result_type = result_name[index + 1:]
+    return experiment_name, result_type
 
 
 def get_visualization_name(result_name: str, folder_name: str = None, suffix: str = None) -> str:
@@ -21,41 +31,39 @@ def get_visualization_name(result_name: str, folder_name: str = None, suffix: st
 
 
 def collect_experiment_files() -> list[str]:
-    print('Collecting experiment files...')
     output_files = os.listdir(SIMULATION_FOLDER)
     csv_files = list(filter(lambda f: f.endswith('.csv'), output_files))
-    print('Done.')
     return csv_files
-
-
-def visualize_ma_run(param):
-    pass
 
 
 def visualize_results(experiment_files: list[str]) -> None:
     for result_file_name in experiment_files:
         result_path = os.path.join(SIMULATION_FOLDER, result_file_name)
         result_name, _ = result_file_name.rsplit('.', maxsplit=1)
+        experiment_name, result_type = split_result_name(result_name)
 
+        ensure_folder_exists(f"{VISUALIZATION_FOLDER}/{experiment_name}")
         df = pd.read_csv(result_path)
-        match result_name.split("_"):
-            case [experiment_name, 'experiment', *result_type] if result_type == ['response', 'times']:
-                ensure_folder_exists(f"{VISUALIZATION_FOLDER}/{experiment_name}")
 
-                regular_plot(df, get_visualization_name(result_name, experiment_name))
-                regular_plot(df, get_visualization_name(result_name, experiment_name, "log"), log_scale=True)
+        if result_type == "response_times":
+            regular_plot(df, get_visualization_name(result_type, experiment_name))
+            regular_plot(df, get_visualization_name(result_type, experiment_name, "log"), log_scale=True)
 
-                df.drop(["timestamp"], axis=1, inplace=True)  # not needed in the latter plots
-                sorted_plot(df, get_visualization_name(result_name, experiment_name))
-                sorted_plot(df, get_visualization_name(result_name, experiment_name, "log"), log_scale=True)
-            case [experiment_name, 'experiment', algorithm, additional_info] if "sls" in algorithm:
-                visualize_sls_run(get_visualization_name(algorithm, experiment_name, additional_info))
-            case [experiment_name, 'experiment', algorithm, additional_info] if "ga" in algorithm:
-                visualize_ga_run(get_visualization_name(algorithm, experiment_name, additional_info))
-            case [experiment_name, 'experiment', algorithm, additional_info] if "ma" in algorithm:
-                visualize_ma_run(get_visualization_name(algorithm, experiment_name, additional_info))
-            case no_match:
-                print(f'Could not find a plot for {no_match}')
+            sorted_plot(df, get_visualization_name(result_type, experiment_name, "sorted"))
+            sorted_plot(df, get_visualization_name(result_type, experiment_name, "sorted_log"), log_scale=True)
+            sorted_plot(df, get_visualization_name(result_type, experiment_name, "sorted_log_zoom"), log_scale=True,
+                        zoom=True)
+        elif result_type == "allocations":
+            save_aggregated_allocations(df, get_visualization_name(experiment_name, suffix="phenotype"))
+        elif result_type == "runs":
+            plot_box_plot(df, get_visualization_name(result_type, experiment_name))
+            save_statistics(df, get_visualization_name(experiment_name, suffix="statistics"))
+        elif "sls" in result_type:
+            visualize_sls_run(df, get_visualization_name(result_type, experiment_name))
+        elif "ga" in result_type or "ma" in result_type:
+            visualize_ga_run(df, get_visualization_name(result_type, experiment_name))
+        else:
+            print(f'Could not find a plot for {result_name}')
 
 
 def main():
