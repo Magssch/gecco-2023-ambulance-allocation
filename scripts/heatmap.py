@@ -12,8 +12,8 @@ def process_dataframe():
     counts['counts'] = counts['size']
     counts.drop(['size'], axis=1, inplace=True)
 
-    empty_cells = pd.read_csv('data/empty_cells.csv', encoding='utf-8', index_col=0)
-    empty_cells = empty_cells[['X', 'Y']].rename(columns={'X': 'xcoor', 'Y': 'ycoor'})
+    empty_cells = pd.read_csv('data/empty_cells.csv', index_col=0)
+    empty_cells = empty_cells[['easting', 'northing']].rename(columns={'X': 'xcoor', 'Y': 'ycoor'})
 
     counts = pd.concat([counts, empty_cells.assign(counts=0)])
     counts.sort_values('counts')

@@ -6,23 +6,17 @@ import styles
 
 
 def process_grids():
-    grids = pd.read_csv('data/grid_zones.csv', index_col=0)
-
-    empty_cells = pd.read_csv('data/empty_cells.csv', encoding='utf-8', index_col=0)
-    empty_cells = empty_cells[['X', 'Y']].rename(columns={'X': 'easting', 'Y': 'northing'})
-    empty_cells['easting'] = empty_cells['easting'].astype(int)
-    empty_cells['northing'] = empty_cells['northing'].astype(int)
-
-    grids = grids[['easting', 'northing', 'base_station']]
+    grids = pd.read_csv('data/grid_zones.csv', index_col=0,
+                        usecols=['SSBID1000M', 'easting', 'northing', 'base_station'])
+    empty_cells = pd.read_csv('data/empty_cells.csv', index_col=0,
+                              usecols=['SSBID1000M', 'easting', 'northing'])
 
     grids = pd.concat([grids, empty_cells.assign(base_station=19)])
     return grids
 
 
 def process_base_stations():
-    base_stations = pd.read_csv('data/base_stations.csv', encoding='utf-8', index_col=0)
-    base_stations = base_stations[['easting', 'northing']]
-    return base_stations
+    return pd.read_csv('data/base_stations.csv', index_col=0, usecols=['id', 'easting', 'northing'])
 
 
 def main():

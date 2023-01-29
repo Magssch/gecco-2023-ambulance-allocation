@@ -9,23 +9,17 @@ from common import VISUALIZATION_FOLDER, ensure_folder_exists
 
 
 def process_grids():
-    grids = pd.read_csv('data/grid_zones.csv', index_col=0)
-
-    empty_cells = pd.read_csv('data/empty_cells.csv', encoding='utf-8', index_col=0)
-    empty_cells = empty_cells[['X', 'Y']].rename(columns={'X': 'easting', 'Y': 'northing'})
-    empty_cells['easting'] = empty_cells['easting'].astype(int)
-    empty_cells['northing'] = empty_cells['northing'].astype(int)
-
-    grids = grids[['easting', 'northing', 'base_station']]
+    grids = pd.read_csv('data/grid_zones.csv', index_col=0,
+                        usecols=['SSBID1000M', 'easting', 'northing', 'base_station'])
+    empty_cells = pd.read_csv('data/empty_cells.csv', index_col=0,
+                              usecols=['SSBID1000M', 'easting', 'northing'])
 
     grids = pd.concat([grids, empty_cells.assign(base_station=19)])
     return grids
 
 
 def process_base_stations():
-    base_stations = pd.read_csv('data/base_stations.csv', encoding='utf-8', index_col=0)
-    base_stations = base_stations[['easting', 'northing']]
-    return base_stations
+    return pd.read_csv('data/base_stations.csv', index_col=0, usecols=['id', 'easting', 'northing'])
 
 
 def plot() -> None:
@@ -41,10 +35,8 @@ def plot() -> None:
                 experiments.append(os.path.join(root, file))
 
     for experiment in experiments:
-        allocations = None
-        with open(experiment, 'r') as f:
-            allocations = pd.read_csv(f)
-        for (strategy_name, allocation) in allocations.iteritems():
+        allocations = pd.read_csv(experiment)
+        for (strategy_name, allocation) in allocations.items():
             print(f'Visualizing {strategy_name}')
             allocation_counts = Counter(allocation.values.tolist())
 
@@ -61,8 +53,11 @@ def plot() -> None:
             for circle_marker in circle_markers:
                 circle_marker.add_to(heatmap)
 
-            # experiment_name = '_'.join(experiment.split('/')[-1].split('_')[:-1])
             file_name = f'allocations/{strategy_name}'.lower()
 
             map_tools.export_map_with_chrome(heatmap, file_name, width=700)
-    print('done.')
+    print('Done.')
+
+
+if __name__ == '__main__':
+    plot()
