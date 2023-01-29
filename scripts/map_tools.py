@@ -5,8 +5,8 @@ import time
 from collections import Counter
 from pathlib import Path
 
-import folium
 import PIL.Image
+import folium
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
@@ -18,12 +18,9 @@ MAP_WIDTH = 400
 MAP_HEIGHT = 800
 
 
-def get_map(
-    width=MAP_WIDTH,
-    height=MAP_HEIGHT,
-    location=[60.045, 11.133],
-    zoom_start=8,
-):
+def get_map(width=MAP_WIDTH, height=MAP_HEIGHT, location=None, zoom_start=8):
+    if location is None:
+        location = [60.045, 11.133]
     return folium.Map(
         height=height,
         width=width,
@@ -50,11 +47,9 @@ def points_to_line(points, weight=3, color="#000000") -> folium.PolyLine:
     return folium.PolyLine(points, weight=weight, color=color, fill_opacity=0.7)
 
 
-def coordinates_to_circle_marker(
-    lat, long, radius, weight=3, color="#000000"
-) -> folium.Marker:
+def coordinates_to_circle_marker(lat, long, radius, weight=3, color="#000000") -> folium.Marker:
     return folium.CircleMarker(
-        location=[lat, long],
+        location=(lat, long),
         radius=radius,
         weight=weight,
         color=color,
@@ -75,9 +70,7 @@ def _point_to_text_marker(point, text) -> folium.Marker:
     )
 
 
-def create_capacity_circle_markers(
-    points, allocation: Counter[int]
-) -> list[folium.Marker]:
+def create_capacity_circle_markers(points, allocation: Counter[int]) -> list[folium.Marker]:
     return [
         _point_to_circle_marker(point, 12, 0, allocation_coloring(allocation[i]))
         for i, point in enumerate(points)
@@ -89,9 +82,9 @@ def create_circle_markers(points):
 
 
 def get_geojson_items(geojson_file_name, style_function):
-    return folium.GeoJson(
-        geojson_file_name, name="geojson", style_function=style_function
-    )
+    geojson_items = folium.GeoJson(geojson_file_name, name="geojson", style_function=style_function)
+    os.remove(geojson_file_name)  # Clean up temp file
+    return geojson_items
 
 
 def export_map(folium_map: folium.Map, file_name, width=MAP_WIDTH):
@@ -104,9 +97,7 @@ def export_map(folium_map: folium.Map, file_name, width=MAP_WIDTH):
     image.save(f"{VISUALIZATION_FOLDER}/{file_name}.png")
 
 
-def export_map_with_chrome(
-    folium_map: folium.Map, file_name, width=MAP_WIDTH, height=MAP_HEIGHT
-):
+def export_map_with_chrome(folium_map: folium.Map, file_name, width=MAP_WIDTH, height=MAP_HEIGHT):
     html_file = f"{VISUALIZATION_FOLDER}/{file_name}.html"
     png_file = f"{VISUALIZATION_FOLDER}/{file_name}.png"
 
