@@ -28,6 +28,17 @@ public class NewFirstExperiment extends Experiment {
     private final Result responseTimes = new Result();
     private final Result runs = new Result();
 
+    public static void main(String[] args) {
+        logger.info("Running experiment 1 ...");
+        NewFirstExperiment firstExperiment = new NewFirstExperiment();
+        firstExperiment.run();
+        logger.info("Done");
+
+        logger.info("Saving results for experiment 1 ...");
+        firstExperiment.saveResults();
+        logger.info("Experiment 1 completed successfully.");
+    }
+
     @Override
     public void run() {
         // Setup
@@ -134,21 +145,11 @@ public class NewFirstExperiment extends Experiment {
         ResponseTimes overallBestResponseTimes = Simulation.withDefaultConfig().simulate(overallBestAllocation);
         runs.saveColumn(optimizerName, bestFitnessAtTermination);
         responseTimes.saveColumn("timestamp", overallBestResponseTimes.getTimestamps());
+        responseTimes.saveColumn("coords", overallBestResponseTimes.getCoordinates());
         responseTimes.saveColumn(optimizerName, overallBestResponseTimes.getResponseTimes());
         allocations.saveColumn(optimizerName + "_d", overallBestAllocation.getDayShiftAllocationSorted());
         allocations.saveColumn(optimizerName + "_n", overallBestAllocation.getNightShiftAllocationSorted());
         overallBestRunStatistics.saveResults(String.format("first_experiment_%s", optimizerName.toLowerCase()));
-    }
-
-    public static void main(String[] args) {
-        logger.info("Running experiment 1 ...");
-        NewFirstExperiment firstExperiment = new NewFirstExperiment();
-        firstExperiment.run();
-        logger.info("Done");
-
-        logger.info("Saving results for experiment 1 ...");
-        firstExperiment.saveResults();
-        logger.info("Experiment 1 completed successfully.");
     }
 
 }

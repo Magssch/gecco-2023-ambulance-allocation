@@ -41,7 +41,6 @@ public final class ComparativeExperiment extends Experiment {
 
     }
 
-
     @Override
     public void saveResults() {
         allocations.saveResults("comparative_experiment_allocations");
@@ -75,21 +74,11 @@ public final class ComparativeExperiment extends Experiment {
         ResponseTimes overallBestResponseTimes = Simulation.withDefaultConfig().simulate(overallBestAllocation);
         runs.saveColumn(optimizerName, bestFitnessAtTermination);
         responseTimes.saveColumn("timestamp", overallBestResponseTimes.getTimestamps());
+        responseTimes.saveColumn("coords", overallBestResponseTimes.getCoordinates());
         responseTimes.saveColumn(optimizerName, overallBestResponseTimes.getResponseTimes());
         allocations.saveColumn(optimizerName + "_d", overallBestAllocation.getDayShiftAllocationSorted());
         allocations.saveColumn(optimizerName + "_n", overallBestAllocation.getNightShiftAllocationSorted());
         overallBestRunStatistics.saveResults(String.format("comparative_experiment_%s", optimizerName.toLowerCase()));
-    }
-
-    public static void main(String[] args) {
-        logger.info("Running comparative experiment ...");
-        ComparativeExperiment comparativeExperiment = new ComparativeExperiment();
-        comparativeExperiment.run();
-        logger.info("Done");
-
-        logger.info("Saving results for comparative experiment ...");
-        comparativeExperiment.saveResults();
-        logger.info("Comparative experiment 2 completed successfully.");
     }
 
 }
