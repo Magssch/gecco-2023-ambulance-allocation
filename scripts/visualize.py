@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -287,8 +288,8 @@ def combine_files(output_file_name, left_file_name, right_file_name, should_merg
     df.to_csv(f"{OUTPUT_FOLDER}/{output_file_name}.csv", index=False)
 
 
-def visualize_geographic_response_time_distribution(df, method_name):
-    df_agg = df.groupby("coords").mean().reset_index()
+def visualize_geographic_response_time_distribution(df: pd.DataFrame, output_file_name: str, method_name: str) -> None:
+    df_agg = df.groupby(["coords"]).mean(numeric_only=True).reset_index()
     grid_list = df_agg["coords"].tolist()
     cost_list = df_agg[method_name].tolist()
     features = [
@@ -301,23 +302,61 @@ def visualize_geographic_response_time_distribution(df, method_name):
 
     heatmap = map_tools.get_map(height=450, width=380)
 
-    geojson = map_tools.get_geojson_items(
-        "data/grid.geojson", styles.get_dynamic_heatmap_style(max(cost_list))
-    )
+    geojson = map_tools.get_geojson_items("data/grid.geojson", styles.get_dynamic_heatmap_style(max(cost_list)))
     geojson.add_to(heatmap)
 
-    map_tools.export_map_with_chrome(
-        heatmap, f"{method_name}_response_times", height=900, width=760
-    )
+    file_name = f'{output_file_name}_{method_name}'.lower()
+    map_tools.export_map_with_chrome(heatmap, file_name, height=450, width=380)
 
 
-def visualize_first_experiment() -> None:
+def load_grid_zones() -> pd.DataFrame:
+    grids = pd.read_csv('data/grid_zones.csv', index_col=0,
+                        usecols=['SSBID1000M', 'easting', 'northing', 'base_station'])
+    empty_cells = pd.read_csv('data/empty_cells.csv', index_col=0,
+                              usecols=['SSBID1000M', 'easting', 'northing'])
+
+    grids = pd.concat([grids, empty_cells.assign(base_station=19)])
+    return grids
+
+
+def load_base_stations() -> pd.DataFrame:
+    return pd.read_csv('data/base_stations.csv', index_col=0, usecols=['id', 'easting', 'northing'])
+
+
+def allocation_plot(df: pd.DataFrame, output_file_name: str) -> None:
+    print('Visualizing allocations (this could take a little while)...')
+    ensure_folder_exists(f"{VISUALIZATION_FOLDER}/{output_file_name}")
+
+    grids = load_grid_zones()
+    base_stations = load_base_stations()
+
+    for (strategy_name, allocation) in df.items():
+        print(f'Visualizing {strategy_name}')
+        allocation_counts = Counter(allocation.values.tolist())
+
+        features = geojson_tools.dataframe_to_squares(grids)
+        geojson_tools.export_features(features, 'data/grid.geojson')
+
+        heatmap = map_tools.get_map(width=3000, height=2500, location=[58.7, 14.073], zoom_start=9)
+
+        points = geojson_tools.dataframe_to_points(base_stations)
+        circle_markers = map_tools.create_capacity_circle_markers(points, allocation_counts)
+        for circle_marker in circle_markers:
+            circle_marker.add_to(heatmap)
+
+        file_name = f'{output_file_name}/{strategy_name}'.lower()
+        map_tools.export_map_with_chrome(heatmap, file_name, width=700)
+    print('Done.')
+
+
+def visualize_first_experiment(include_allocations=False) -> None:
     print("Visualizing first experiment data...")
     ensure_folder_exists(f"{VISUALIZATION_FOLDER}/first_experiment")
     file = f"{SIMULATION_FOLDER}/first_experiment_response_times.csv"
     df = pd.read_csv(file)
 
-    visualize_geographic_response_time_distribution(df, "PopulationProportionate")
+    visualize_geographic_response_time_distribution(df, "first_experiment/geographic_distribution",
+                                                    "PopulationProportionate")
 
     regular_plot(df, "first_experiment/response_times")
     regular_plot(df, "first_experiment/response_times_log", log_scale=True)
@@ -330,10 +369,10 @@ def visualize_first_experiment() -> None:
 
     runs = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_runs.csv")
     plot_box_plot(runs, f"first_experiment/runs")
-    save_statistics(runs, "first_experiment_statistics")
+    save_statistics(runs, "first_experiment_run_statistics")
 
     allocations = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_allocations.csv")
-    save_aggregated_allocations(allocations, "first_experiment_allocations")
+    save_aggregated_allocations(allocations, "first_experiment_phenotypes")
 
     sls_run = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_fsls.csv")
     visualize_sls_run(sls_run, "first_experiment/sls")
@@ -341,6 +380,9 @@ def visualize_first_experiment() -> None:
     visualize_ga_run(ga_run, "first_experiment/ga")
     ma_run = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_ma.csv")
     visualize_ga_run(ma_run, "first_experiment/ma")
+
+    if include_allocations:
+        allocation_plot(allocations, "first_experiment/allocations")
 
     print("Done.")
 
@@ -442,7 +484,7 @@ def configure_matplotlib() -> None:
 def main() -> None:
     configure_matplotlib()
 
-    visualize_first_experiment()
+    visualize_first_experiment(include_allocations=False)
     # visualize_third_experiment()
     # visualize_fourth_experiment()
 
