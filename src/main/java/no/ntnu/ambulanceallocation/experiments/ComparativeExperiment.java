@@ -27,9 +27,9 @@ public final class ComparativeExperiment extends Experiment {
         // Setup
         StochasticLocalSearch forwardStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.FORWARD);
         StochasticLocalSearch hammingStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.HAMMING);
-        StochasticLocalSearch lazyStochasticLocalSearchA = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 5);
-        StochasticLocalSearch lazyStochasticLocalSearchB = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 10);
-        StochasticLocalSearch lazyStochasticLocalSearchC = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 15);
+        StochasticLocalSearch lazyStochasticLocalSearchA = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 10);
+        StochasticLocalSearch lazyStochasticLocalSearchB = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 30);
+        StochasticLocalSearch lazyStochasticLocalSearchC = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 60);
 
 
         // Partial experiments
@@ -79,6 +79,17 @@ public final class ComparativeExperiment extends Experiment {
         allocations.saveColumn(optimizerName + "_d", overallBestAllocation.getDayShiftAllocationSorted());
         allocations.saveColumn(optimizerName + "_n", overallBestAllocation.getNightShiftAllocationSorted());
         overallBestRunStatistics.saveResults(String.format("comparative_experiment_%s", optimizerName.toLowerCase()));
+    }
+
+    public static void main(String[] args) {
+        logger.info("Running comparative SLS experiment ...");
+        ComparativeExperiment comparativeExperiment = new ComparativeExperiment();
+        comparativeExperiment.run();
+        logger.info("Done");
+
+        logger.info("Saving results for comparative SLS experiment ...");
+        comparativeExperiment.saveResults();
+        logger.info("Comparative SLS experiment completed successfully.");
     }
 
 }
