@@ -4,7 +4,8 @@ import pandas as pd
 
 from common import SIMULATION_FOLDER, VISUALIZATION_FOLDER, ensure_folder_exists
 from save_statistics import save_aggregated_allocations, save_statistics
-from visualize import regular_plot, sorted_plot, visualize_sls_run, visualize_ga_run, plot_box_plot
+from visualize import regular_plot, sorted_plot, visualize_sls_run, visualize_ga_run, plot_box_plot, allocation_plot, \
+    visualize_geographic_response_time_distribution
 
 
 def split_result_name(result_name: str) -> tuple[str, str]:
@@ -36,7 +37,7 @@ def collect_experiment_files() -> list[str]:
     return csv_files
 
 
-def visualize_results(experiment_files: list[str]) -> None:
+def visualize_results(experiment_files: list[str], include_allocations=False) -> None:
     for result_file_name in experiment_files:
         result_path = os.path.join(SIMULATION_FOLDER, result_file_name)
         result_name, _ = result_file_name.rsplit('.', maxsplit=1)
@@ -46,6 +47,12 @@ def visualize_results(experiment_files: list[str]) -> None:
         df = pd.read_csv(result_path)
 
         if result_type == "response_times":
+            visualize_geographic_response_time_distribution(
+                df,
+                get_visualization_name('geographic_distribution', experiment_name),
+                "PopulationProportionate"
+            )
+
             regular_plot(df, get_visualization_name(result_type, experiment_name))
             regular_plot(df, get_visualization_name(result_type, experiment_name, "log"), log_scale=True)
 
@@ -54,10 +61,12 @@ def visualize_results(experiment_files: list[str]) -> None:
             sorted_plot(df, get_visualization_name(result_type, experiment_name, "sorted_log_zoom"), log_scale=True,
                         zoom=True)
         elif result_type == "allocations":
-            save_aggregated_allocations(df, get_visualization_name(experiment_name, suffix="phenotype"))
+            if include_allocations:
+                allocation_plot(df, "first_experiment/allocations")
+            save_aggregated_allocations(df, get_visualization_name(experiment_name, suffix="phenotypes"))
         elif result_type == "runs":
             plot_box_plot(df, get_visualization_name(result_type, experiment_name))
-            save_statistics(df, get_visualization_name(experiment_name, suffix="statistics"))
+            save_statistics(df, get_visualization_name(experiment_name, suffix="run_statistics"))
         elif "sls" in result_type:
             visualize_sls_run(df, get_visualization_name(result_type, experiment_name))
         elif "ga" in result_type or "ma" in result_type:
@@ -68,7 +77,7 @@ def visualize_results(experiment_files: list[str]) -> None:
 
 def main():
     experiment_files = collect_experiment_files()
-    visualize_results(experiment_files)
+    visualize_results(experiment_files, include_allocations=False)
 
 
 if __name__ == '__main__':
