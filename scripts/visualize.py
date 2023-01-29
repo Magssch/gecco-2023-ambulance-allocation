@@ -1,10 +1,19 @@
-import ambulance_allocation
-import geojson_tools
-import map_tools
+import re
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.ticker import (
+    FixedFormatter,
+    FixedLocator,
+    FuncFormatter,
+    MaxNLocator,
+    MultipleLocator,
+)
+
+import geojson_tools
+import map_tools
 import styles
 from common import (
     OUTPUT_FOLDER,
@@ -13,14 +22,6 @@ from common import (
     ensure_folder_exists,
 )
 from coordinate_converter import ssb_grid_id_to_utm_centroid
-from matplotlib.ticker import (
-    FixedFormatter,
-    FixedLocator,
-    FuncFormatter,
-    MaxNLocator,
-    MultipleLocator,
-)
-from plots.box_plot import plot_box_plot
 from save_statistics import save_aggregated_allocations, save_statistics
 
 DEFAULT_COLORS = [
@@ -70,16 +71,16 @@ def multi_axis_plot(df, filename, title, xlabel, ylabel, zlabel, log_scale=False
 
 
 def index_plot(
-    df,
-    filename,
-    title,
-    xlabel,
-    ylabel,
-    y_bottom=None,
-    y_top=None,
-    x_left=None,
-    log_scale=False,
-    legend=True,
+        df,
+        filename,
+        title,
+        xlabel,
+        ylabel,
+        y_bottom=None,
+        y_top=None,
+        x_left=None,
+        log_scale=False,
+        legend=True,
 ):
     color = 0
     _, ax = plt.subplots()
@@ -144,7 +145,8 @@ def rank_plot(df, filename, log_scale=False):
     plt.close()
 
 
-def regular_plot(df, filename, log_scale=False):
+def regular_plot(df: pd.DataFrame, output_file_name: str, log_scale=False) -> None:
+    df = df.drop(columns="coords")
     df["timestamp"] = pd.to_datetime(df["timestamp"], dayfirst=True)
 
     color = 0
@@ -168,11 +170,14 @@ def regular_plot(df, filename, log_scale=False):
     plt.title("Response times")
     plt.xlabel("time")
     plt.ylabel("response time / (s)")
-    plt.savefig(f"{VISUALIZATION_FOLDER}/{filename}{FILE_EXTENSION}")
+    plt.savefig(f"{VISUALIZATION_FOLDER}/{output_file_name}{FILE_EXTENSION}")
     plt.close()
 
 
-def sorted_plot(df, filename, log_scale=False, zoom=False):
+def sorted_plot(df: pd.DataFrame, output_file_name: str, log_scale=False, zoom=False):
+    df = df.drop(columns="coords")
+    df = df.drop(["timestamp"], axis=1)
+
     for col in df:
         df[col] = df[col].sort_values(ignore_index=True)
 
@@ -194,25 +199,39 @@ def sorted_plot(df, filename, log_scale=False, zoom=False):
     plt.title("Response time distribution")
     plt.ylabel("response time / (s)")
     plt.legend()
-    ax.figure.savefig(f"{VISUALIZATION_FOLDER}/{filename}{FILE_EXTENSION}")
+    ax.figure.savefig(f"{VISUALIZATION_FOLDER}/{output_file_name}{FILE_EXTENSION}")
     plt.close()
 
 
-def visualize_sls_run(filename: str):
-    name = filename.split("_")[-1]
-    file = f"{SIMULATION_FOLDER}/{filename}.csv"
-    tries, flips, current, best = np.loadtxt(
-        file, unpack=True, skiprows=1, delimiter=","
-    )
+def plot_box_plot(df: pd.DataFrame, output_file_name: str) -> None:
+    for column in df.columns:
+        # Split long CamelCased names
+        if len(column) > 20:
+            # CamelCase regex
+            tokens = re.sub('([A-Z][a-z]+)', r' \1', re.sub('([A-Z]+)', r' \1', column)).split()
+            column_with_space = '- \n'.join(tokens)
+            df = df.rename(columns={column: column_with_space})
 
-    x = np.arange(len(tries))
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ax = df.boxplot()
+
+    ax.set_title('Performance of algorithms')
+    ax.set_xlabel('algorithm')
+    ax.set_ylabel('average response time / (s)')
+
+    plt.savefig(f'{VISUALIZATION_FOLDER}/{output_file_name}{FILE_EXTENSION}')
+    plt.close()
+
+
+def visualize_sls_run(df: pd.DataFrame, output_file_name: str) -> None:
+    name = output_file_name.split("/")[-1]
 
     fig, ax = plt.subplots()
-    ax.plot(x, current, label="current")
-    ax.plot(x, best, label="best")
+    ax.plot(df.index, df['current'], label="current")
+    ax.plot(df.index, df['best'], label="best")
 
     locators = []
-    for i, (t, f) in enumerate(zip(tries, flips)):
+    for i, (t, f) in enumerate(zip(df['tries'], df['flips'])):
         if t != 0.0 and f == 0.0:
             locators.append(i)
             ax.axvline(x=i, linestyle="--", c="k")
@@ -222,19 +241,17 @@ def visualize_sls_run(filename: str):
     ax.set_ylabel("fitness")
 
     ax.xaxis.set_major_locator(FixedLocator(locators))
-    ax.xaxis.set_major_formatter(FixedFormatter(list(x + 1)))
+    ax.xaxis.set_major_formatter(FixedFormatter(list(df.index + 1)))
     ax.xaxis.set_minor_locator(MultipleLocator(1))
 
     plt.legend()
 
-    fig.savefig(f"{VISUALIZATION_FOLDER}/first_experiment/{name}{FILE_EXTENSION}")
+    plt.savefig(f"{VISUALIZATION_FOLDER}/{output_file_name}{FILE_EXTENSION}")
     plt.close()
 
 
-def visualize_ga_run(filename: str):
-    algorithm = filename.split("_")[-1]
-    file = f"{SIMULATION_FOLDER}/{filename}.csv"
-    best, average, entropy = np.loadtxt(file, unpack=True, skiprows=1, delimiter=",")
+def visualize_ga_run(df: pd.DataFrame, output_file_name: str) -> None:
+    algorithm = output_file_name.split("/")[-1]
     fig, ax1 = plt.subplots()
     ax1.set_title(algorithm.upper())
 
@@ -242,20 +259,20 @@ def visualize_ga_run(filename: str):
     ax1.set_xlabel("generation")
     ax1.set_ylabel("average fitness", color=color)
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax1.plot(average, color=color)
+    ax1.plot(df['average'], color=color)
     ax1.tick_params(axis="y", labelcolor=color)
-    ax1.plot(best, linestyle="--", color="black", label="elite")
+    ax1.plot(df['best'], linestyle="--", color="black", label="elite")
 
     ax2 = ax1.twinx()
 
     color = "tab:orange"
     ax2.set_ylabel("entropy", color=color)
-    ax2.plot(entropy, color=color)
+    ax2.plot(df['diversity'], color=color)
     ax2.tick_params(axis="y", labelcolor=color)
 
     fig.tight_layout()
     ax1.legend()
-    fig.savefig(f"{VISUALIZATION_FOLDER}/first_experiment/{algorithm}{FILE_EXTENSION}")
+    plt.savefig(f"{VISUALIZATION_FOLDER}/{output_file_name}{FILE_EXTENSION}")
     plt.close()
 
 
@@ -294,19 +311,16 @@ def visualize_geographic_response_time_distribution(df, method_name):
     )
 
 
-def visualize_first_experiment():
+def visualize_first_experiment() -> None:
     print("Visualizing first experiment data...")
     ensure_folder_exists(f"{VISUALIZATION_FOLDER}/first_experiment")
     file = f"{SIMULATION_FOLDER}/first_experiment_response_times.csv"
     df = pd.read_csv(file)
 
     visualize_geographic_response_time_distribution(df, "PopulationProportionate")
-    df.drop(columns="coords", inplace=True)
 
     regular_plot(df, "first_experiment/response_times")
     regular_plot(df, "first_experiment/response_times_log", log_scale=True)
-
-    df.drop(["timestamp"], axis=1, inplace=True)  # not needed in the latter plots
 
     sorted_plot(df, "first_experiment/response_times_sorted")
     sorted_plot(df, "first_experiment/response_times_sorted_log", log_scale=True)
@@ -314,21 +328,21 @@ def visualize_first_experiment():
         df, "first_experiment/response_times_sorted_log_zoom", log_scale=True, zoom=True
     )
 
-    plot_box_plot(
-        "simulation/first_experiment_runs",
-        f"first_experiment/runs_box_plot{FILE_EXTENSION}",
-    )
+    runs = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_runs.csv")
+    plot_box_plot(runs, f"first_experiment/runs")
+    save_statistics(runs, "first_experiment_statistics")
 
-    save_aggregated_allocations(
-        "first_experiment_allocations", "first_experiment_allocations"
-    )
-    save_statistics("first_experiment_runs", "first_experiment_statistics")
+    allocations = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_allocations.csv")
+    save_aggregated_allocations(allocations, "first_experiment_allocations")
 
-    visualize_sls_run("first_experiment_sls")
-    visualize_ga_run("first_experiment_ga")
-    visualize_ga_run("first_experiment_ma")
+    sls_run = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_fsls.csv")
+    visualize_sls_run(sls_run, "first_experiment/sls")
+    ga_run = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_ga.csv")
+    visualize_ga_run(ga_run, "first_experiment/ga")
+    ma_run = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_ma.csv")
+    visualize_ga_run(ma_run, "first_experiment/ma")
 
-    print("done.")
+    print("Done.")
 
 
 def visualize_third_experiment():
@@ -412,7 +426,7 @@ def visualize_fourth_experiment():
     print("done.")
 
 
-def configure_matplotlib():
+def configure_matplotlib() -> None:
     font = {"family": "serif", "size": 14}
     figure = {
         "autolayout": True,
@@ -425,14 +439,14 @@ def configure_matplotlib():
     print(f"matplotlib backend: {matplotlib.get_backend()}")
 
 
-def main():
+def main() -> None:
     configure_matplotlib()
 
     visualize_first_experiment()
     # visualize_third_experiment()
     # visualize_fourth_experiment()
 
-    ambulance_allocation.plot()
+    # ambulance_allocation.plot()
 
 
 if __name__ == "__main__":
