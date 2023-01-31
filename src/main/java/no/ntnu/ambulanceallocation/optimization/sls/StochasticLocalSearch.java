@@ -1,19 +1,18 @@
 package no.ntnu.ambulanceallocation.optimization.sls;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.experiments.Result;
 import no.ntnu.ambulanceallocation.optimization.Optimizer;
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class StochasticLocalSearch implements Optimizer {
 
@@ -31,6 +30,7 @@ public class StochasticLocalSearch implements Optimizer {
 
     private final NeighborhoodFunction neighborhoodFunction;
     private final int neighborhoodSize;
+    private float dynamicNeighborhoodSize;
 
     private final Config config;
 
@@ -39,15 +39,17 @@ public class StochasticLocalSearch implements Optimizer {
 
     public StochasticLocalSearch(NeighborhoodFunction neighborhoodFunction) {
         this.neighborhoodFunction = neighborhoodFunction;
-        this.neighborhoodSize = Parameters.LAZY_NEIGHBOURHOOD_SIZE;
-        this.config = Config.defaultConfig();
+        neighborhoodSize = Parameters.LAZY_NEIGHBOURHOOD_SIZE;
+        dynamicNeighborhoodSize = this.neighborhoodSize;
+        config = Config.defaultConfig();
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
     }
 
     public StochasticLocalSearch(NeighborhoodFunction neighborhoodFunction, Config config) {
         this.neighborhoodFunction = neighborhoodFunction;
-        this.neighborhoodSize = Parameters.LAZY_NEIGHBOURHOOD_SIZE;
+        neighborhoodSize = Parameters.LAZY_NEIGHBOURHOOD_SIZE;
+        dynamicNeighborhoodSize = this.neighborhoodSize;
         this.config = config;
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
@@ -56,6 +58,7 @@ public class StochasticLocalSearch implements Optimizer {
     public StochasticLocalSearch(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
         this.neighborhoodFunction = neighborhoodFunction;
         this.neighborhoodSize = neighborhoodSize;
+        dynamicNeighborhoodSize = neighborhoodSize;
         this.config = Config.defaultConfig();
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
@@ -70,6 +73,7 @@ public class StochasticLocalSearch implements Optimizer {
     public void optimize() {
         clearRunStatistics();
 
+
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
 
@@ -78,15 +82,14 @@ public class StochasticLocalSearch implements Optimizer {
             logger.info("Starting {} optimizer...", getAbbreviation());
             int tries = 0;
             int flips = 0;
+            dynamicNeighborhoodSize = neighborhoodSize;
             long startTime = System.nanoTime();
 
             logger.info("{} tries: {}", getAbbreviation(), tries);
             logger.info("{} best fitness: {}", getAbbreviation(), bestSolution.getFitness());
             while (elapsedTime(startTime) < Parameters.MAX_RUNNING_TIME && tries < Parameters.MAX_TRIES) {
-
                 if (Utils.randomDouble() < Parameters.RESTART_PROBABILITY) {
                     solution.restartStep();
-                    tries++;
                     flips = 0;
                     logger.info("{} tries: {}", getAbbreviation(), tries);
                     logger.info("{} best fitness: {}", getAbbreviation(), bestSolution.getFitness());
@@ -96,7 +99,7 @@ public class StochasticLocalSearch implements Optimizer {
                         solution.noiseStep();
                     } else {
                         logger.info("{} flips: {} (g)", getAbbreviation(), flips);
-                        solution.greedyStep(neighborhoodFunction, neighborhoodSize);
+                        solution.greedyStep(neighborhoodFunction, computeNeighborhoodSize());
                     }
                 }
 
@@ -132,6 +135,11 @@ public class StochasticLocalSearch implements Optimizer {
             case HAMMING -> "HSLS";
             case LAZY -> String.format("LazySLS_%d", neighborhoodSize);
         };
+    }
+
+    private int computeNeighborhoodSize() {
+        dynamicNeighborhoodSize *= (1 + Parameters.CONDUCTIVITY / 10_000f);
+        return Math.round(dynamicNeighborhoodSize);
     }
 
     private void saveSummary(int tries, int flips) {

@@ -1,16 +1,16 @@
 package no.ntnu.ambulanceallocation;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
 import no.ntnu.ambulanceallocation.optimization.initializer.Random;
 import no.ntnu.ambulanceallocation.simulation.DispatchPolicy;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 public final class Parameters {
     // General
-    public static int RUNS = 1;
-    public static int MAX_RUNNING_TIME = (int) (4.0 * 60); // minutes
+    public static int RUNS = 15;
+    public static int MAX_RUNNING_TIME = (int) (6.0 * 60); // minutes
 
     // Simulation
     public static final int BUFFER_SIZE = 4; // hours
@@ -32,12 +32,13 @@ public final class Parameters {
     // SLS
     public static final int MAX_TRIES = 999;
     public static final double RESTART_PROBABILITY = 0.025;
-    public static final double NOISE_PROBABILITY = 0.8;
-    public static final int LAZY_NEIGHBOURHOOD_SIZE = 5;
+    public static final double NOISE_PROBABILITY = 0.75;
+    public static final int LAZY_NEIGHBOURHOOD_SIZE = 10;
+    public static final int CONDUCTIVITY = 75; // 0-1000, 0=No change, 1000=Rapid change
 
     // Genetic & Memetic Algorithm
     public static Initializer INITIALIZER = new Random();
-    public static int POPULATIONPROPORTIONATE_SEEDING_SIZE = 1;
+    public static int POPULATION_PROPORTIONATE_SEEDING_SIZE = 1;
     public static int GENERATIONS = 999;
     public static int POPULATION_SIZE = 36;
     public static int ELITE_SIZE = 4;

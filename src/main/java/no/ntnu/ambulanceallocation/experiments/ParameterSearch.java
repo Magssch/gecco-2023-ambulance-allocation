@@ -1,11 +1,5 @@
 package no.ntnu.ambulanceallocation.experiments;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.Optimizer;
 import no.ntnu.ambulanceallocation.optimization.Solution;
@@ -14,6 +8,11 @@ import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
 import no.ntnu.ambulanceallocation.optimization.ma.MemeticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
 import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParameterSearch extends Experiment {
 
@@ -43,7 +42,7 @@ public class ParameterSearch extends Experiment {
         for (String parameterConfig : parameters.get("-paramList").split(";")) {
             String[] params = parameterConfig.split(",");
 
-            Parameters.POPULATIONPROPORTIONATE_SEEDING_SIZE = Integer.parseInt(params[0]);
+            Parameters.POPULATION_PROPORTIONATE_SEEDING_SIZE = Integer.parseInt(params[0]);
             Parameters.POPULATION_SIZE = Integer.parseInt(params[1]);
             Parameters.ELITE_SIZE = Integer.parseInt(params[2]);
             Parameters.TOURNAMENT_SIZE = Integer.parseInt(params[3]);

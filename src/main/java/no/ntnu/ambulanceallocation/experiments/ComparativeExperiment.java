@@ -11,6 +11,10 @@ import no.ntnu.ambulanceallocation.simulation.Simulation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,24 +25,26 @@ public final class ComparativeExperiment extends Experiment {
     private final Result allocations = new Result();
     private final Result responseTimes = new Result();
     private final Result runs = new Result();
+    private final List<Optimizer> optimizers = new ArrayList<>();
 
-    @Override
-    public void run() {
+    public ComparativeExperiment() {
         // Setup
         StochasticLocalSearch forwardStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.FORWARD);
-        StochasticLocalSearch hammingStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.HAMMING);
         StochasticLocalSearch lazyStochasticLocalSearchA = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 10);
         StochasticLocalSearch lazyStochasticLocalSearchB = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 30);
         StochasticLocalSearch lazyStochasticLocalSearchC = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 60);
 
+        optimizers.add(forwardStochasticLocalSearch);
+        optimizers.add(lazyStochasticLocalSearchA);
+        optimizers.add(lazyStochasticLocalSearchB);
+        optimizers.add(lazyStochasticLocalSearchC);
+    }
 
-        // Partial experiments
-        runStochasticOptimizer(forwardStochasticLocalSearch);
-        runStochasticOptimizer(hammingStochasticLocalSearch);
-        runStochasticOptimizer(lazyStochasticLocalSearchA);
-        runStochasticOptimizer(lazyStochasticLocalSearchB);
-        runStochasticOptimizer(lazyStochasticLocalSearchC);
-
+    @Override
+    public void run() {
+        for (Optimizer optimizer : optimizers) {
+            runStochasticOptimizer(optimizer);
+        }
     }
 
     @Override
@@ -81,9 +87,20 @@ public final class ComparativeExperiment extends Experiment {
         overallBestRunStatistics.saveResults(String.format("comparative_experiment_%s", optimizerName.toLowerCase()));
     }
 
+    private void getTimeEstimate() {
+        int optimizers = this.optimizers.size();
+        int durationInMinutes = Parameters.RUNS * optimizers * Parameters.MAX_RUNNING_TIME / 60;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String estimatedTimeOfCompletion = LocalDateTime.now().plus(Duration.of(durationInMinutes, ChronoUnit.MINUTES)).format(formatter);
+        logger.info("Estimated experiment duration: {}", durationInMinutes);
+        logger.info("You can come back at around: {}", estimatedTimeOfCompletion);
+        logger.info("Remember to keep the computer plugged in!");
+    }
+
     public static void main(String[] args) {
         logger.info("Running comparative SLS experiment ...");
         ComparativeExperiment comparativeExperiment = new ComparativeExperiment();
+        comparativeExperiment.getTimeEstimate();
         comparativeExperiment.run();
         logger.info("Done");
 
