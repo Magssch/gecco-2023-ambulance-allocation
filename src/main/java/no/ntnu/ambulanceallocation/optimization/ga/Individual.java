@@ -153,10 +153,9 @@ public class Individual extends Solution {
     // Memetic method
     private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
             boolean greedy) {
-
-        List<BaseStation> baseStationDayAmbulanceProportionList = this.getAllocation()
+        List<Integer> baseStationDayAmbulanceProportionList = this.getAllocation()
                 .getBaseStationDayAmbulanceProportionList();
-        List<BaseStation> baseStationNightAmbulanceProportionList = this.getAllocation()
+        List<Integer> baseStationNightAmbulanceProportionList = this.getAllocation()
                 .getBaseStationNightAmbulanceProportionList();
 
         if (dayHighestN == -1) {
@@ -177,22 +176,49 @@ public class Individual extends Solution {
         List<List<Integer>> nightSubChromosomeNeighbors = new ArrayList<>();
         nightSubChromosomeNeighbors.add(this.getAllocation().getNightShiftAllocation());
 
-        for (BaseStation highStation : baseStationDayAmbulanceProportionList.subList(0, dayHighestN)) {
-            for (BaseStation lowStation : baseStationDayAmbulanceProportionList.subList(
+        for (Integer highStation : baseStationDayAmbulanceProportionList.subList(0, dayHighestN)) {
+            for (Integer lowStation : baseStationDayAmbulanceProportionList.subList(
                     baseStationDayAmbulanceProportionList.size() - dayLowestN,
                     baseStationDayAmbulanceProportionList.size())) {
+                if (highStation == lowStation || getAllocation().getDayShiftAllocation().indexOf(highStation) == -1) {
+                    continue;
+                }
                 List<Integer> newChromosome = new ArrayList<>(getAllocation().getDayShiftAllocation());
-                newChromosome.set(newChromosome.indexOf(highStation.getId()), lowStation.getId());
+                try {
+                    newChromosome.set(newChromosome.indexOf(highStation), lowStation);
+                } catch (Exception e) {
+                    System.err.println(e);
+                    System.err.println("dayHighestN: " + dayHighestN + " dayLowestN: " + dayLowestN + " nightHighestN: "
+                            + nightHighestN + " nightLowestN: " + nightLowestN);
+                    System.err
+                            .println("Error: " + highStation + " " + lowStation + " " + newChromosome);
+                    System.err.println("day ambulance frequency map: " + baseStationDayAmbulanceProportionList);
+                    System.err.println(
+                            "day ambulance frequency map: " + getAllocation().getDayAmbulanceStationFrequency());
+                    System.err.println();
+                }
                 daySubChromosomeNeighbors.add(newChromosome);
             }
         }
 
-        for (BaseStation highStation : baseStationNightAmbulanceProportionList.subList(0, nightHighestN)) {
-            for (BaseStation lowStation : baseStationNightAmbulanceProportionList.subList(
+        for (Integer highStation : baseStationNightAmbulanceProportionList.subList(0, nightHighestN)) {
+            for (Integer lowStation : baseStationNightAmbulanceProportionList.subList(
                     baseStationNightAmbulanceProportionList.size() - nightLowestN,
                     baseStationNightAmbulanceProportionList.size())) {
+                if (highStation == lowStation || getAllocation().getNightShiftAllocation().indexOf(highStation) == -1) {
+                    continue;
+                }
                 List<Integer> newChromosome = new ArrayList<>(getAllocation().getNightShiftAllocation());
-                newChromosome.set(newChromosome.indexOf(highStation.getId()), lowStation.getId());
+                try {
+                    newChromosome.set(newChromosome.indexOf(highStation), lowStation);
+                } catch (Exception e) {
+                    System.err.println(e);
+                    System.err
+                            .println("Error: " + highStation + " " + lowStation + " " + newChromosome);
+                    System.err.println("night ambulance frequency map: " + baseStationNightAmbulanceProportionList);
+                    System.err.println(
+                            "night ambulance frequency map: " + getAllocation().getNightAmbulanceStationFrequency());
+                }
                 nightSubChromosomeNeighbors.add(newChromosome);
             }
         }
