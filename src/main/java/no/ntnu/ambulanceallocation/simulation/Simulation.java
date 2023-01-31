@@ -53,7 +53,7 @@ public final class Simulation {
 
     static {
         Thread allocationsSaveHook = new Thread(() -> {
-            System.out.println("Saving allocation results, do not interrupt...");
+            // System.out.println("Saving allocation results, do not interrupt...");
             saveAllocationResults();
         });
         Runtime.getRuntime().addShutdownHook(allocationsSaveHook);
