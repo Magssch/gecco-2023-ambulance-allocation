@@ -1,5 +1,19 @@
 package no.ntnu.ambulanceallocation.optimization.ga;
 
+import no.ntnu.ambulanceallocation.Parameters;
+import no.ntnu.ambulanceallocation.optimization.Solution;
+import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
+import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
+import no.ntnu.ambulanceallocation.optimization.ma.OperatorCritic;
+import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
+import no.ntnu.ambulanceallocation.optimization.sls.SlsSolution;
+import no.ntnu.ambulanceallocation.simulation.BaseStation;
+import no.ntnu.ambulanceallocation.simulation.Config;
+import no.ntnu.ambulanceallocation.utils.Tuple;
+import no.ntnu.ambulanceallocation.utils.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -8,17 +22,12 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import no.ntnu.ambulanceallocation.Parameters;
-import no.ntnu.ambulanceallocation.optimization.Solution;
-import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
-import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
-import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
-import no.ntnu.ambulanceallocation.simulation.BaseStation;
-import no.ntnu.ambulanceallocation.simulation.Config;
-import no.ntnu.ambulanceallocation.utils.Tuple;
-import no.ntnu.ambulanceallocation.utils.Utils;
-
 public class Individual extends Solution {
+
+    public static final int NUMBER_OF_OPERATORS = 4;
+    public static final OperatorCritic operatorCritic = new OperatorCritic(NUMBER_OF_OPERATORS);
+
+    private final Logger logger = LoggerFactory.getLogger(SlsSolution.class);
 
     public Individual(List<List<Integer>> chromosomes) {
         super(chromosomes);
@@ -95,21 +104,21 @@ public class Individual extends Solution {
     }
 
     // Memetic method
-    public void improve(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
-            double improveProbability) {
+    public void improve(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction, int neighborhoodSize,
+                        double improveProbability) {
         if (Utils.randomDouble() < improveProbability) {
-            // find best individual in population
+            // find the best individual in population
             switch (evolutionStrategy) {
                 case DARWINIAN -> {
                 }
                 case BALDWINIAN -> {
-                    Individual bestNeighbor = improve();
+                    Individual bestNeighbor = improve(neighborhoodFunction, neighborhoodSize);
                     if (bestNeighbor.getFitness() <= getFitness()) {
                         this.setFitness(bestNeighbor.getFitness());
                     }
                 }
                 case LAMARCKIAN -> {
-                    Individual bestNeighbor = improve();
+                    Individual bestNeighbor = improve(neighborhoodFunction, neighborhoodSize);
                     if (bestNeighbor.getFitness() <= getFitness()) {
                         copy(bestNeighbor);
                     }
@@ -118,41 +127,40 @@ public class Individual extends Solution {
         }
     }
 
+    private int selectImproveOperator() {
+        if (Parameters.USE_OPERATOR_CRITIC) {
+            return operatorCritic.selectNext();
+        }
+        return Utils.randomInt(4);
+    }
+
     // TODO: How to decide bounds for randomInt() calls?
-    private Individual improve() {
-        return switch (Utils.randomInt(3)) {
-            // case 0 -> robinHoodNeighborhoodSearch(Utils.randomInt(3)+1,
-            // Utils.randomInt(3)+1,
-            // Utils.randomInt(3)+1,
-            // Utils.randomInt(3)+1, false);
+    private Individual improve(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
+        int operator = selectImproveOperator();
+        Individual individual = switch (operator) {
             case 0 ->
-                robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, Utils.randomInt(3) + 1,
-                        Utils.randomInt(3) + 1, true);
-            // Allow full exhaustive chromosome search for lower proportionate base stations
-            // (expensive!):
-            // case 2 ->
-            // robinHoodNeighborhoodSearch(Utils.randomInt(3)+1, -1,
-            // Utils.randomInt(3)+1, -1, false);
-            // // Allow full exhaustive chromosome search for higher proportionate base
-            // // stations (expensive!):
-            // case 3 ->
-            // robinHoodNeighborhoodSearch(-1, Utils.randomInt(3)+1,
-            // -1, Utils.randomInt(3)+1, false);
-            // Allow full chromosome search for lower proportionate base stations (greedy):
-            case 1 ->
-                robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, -1,
-                        Utils.randomInt(3) + 1, -1, true);
-            // Allow full chromosome search for higher proportionate base stations (greedy):
-            case 2 ->
-                robinHoodNeighborhoodSearch(-1, Utils.randomInt(3) + 1,
-                        -1, Utils.randomInt(3) + 1, true);
-            default -> throw new IllegalArgumentException("Unexpected value");
+                    robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, Utils.randomInt(3) + 1,
+                            Utils.randomInt(3) + 1, true);
+            case 1 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, -1,
+                    Utils.randomInt(3) + 1, -1, true);
+            case 2 -> robinHoodNeighborhoodSearch(-1, Utils.randomInt(3) + 1,
+                    -1, Utils.randomInt(3) + 1, true);
+            case 3 -> {
+                SlsSolution slsSolution = new SlsSolution(this);
+                SlsSolution bestNeighborhood = slsSolution.greedyStep(neighborhoodFunction, neighborhoodSize);
+                yield new Individual(bestNeighborhood);
+            }
+            default ->
+                    throw new IllegalStateException(String.format("Operator %d not present. Illegal value.", operator));
         };
+
+        operatorCritic.assignCredit(operator, this.getFitness() - individual.getFitness());
+        return individual;
     }
 
     // Memetic method
     private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
-            boolean greedy) {
+                                                   boolean greedy) {
         List<Integer> baseStationDayAmbulanceProportionList = this.getAllocation()
                 .getBaseStationDayAmbulanceProportionList();
         List<Integer> baseStationNightAmbulanceProportionList = this.getAllocation()

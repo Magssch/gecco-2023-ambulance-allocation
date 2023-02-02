@@ -4,8 +4,10 @@ import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.Allocation;
 import no.ntnu.ambulanceallocation.optimization.Optimizer;
 import no.ntnu.ambulanceallocation.optimization.Solution;
+import no.ntnu.ambulanceallocation.optimization.ga.Individual;
+import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
+import no.ntnu.ambulanceallocation.optimization.ma.MemeticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
-import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
 import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
 import org.slf4j.Logger;
@@ -29,21 +31,25 @@ public final class ComparativeExperiment extends Experiment {
 
     public ComparativeExperiment() {
         // Setup
-        StochasticLocalSearch forwardStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.FORWARD);
-        StochasticLocalSearch lazyStochasticLocalSearchA = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 10);
-        StochasticLocalSearch lazyStochasticLocalSearchB = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 30);
-        StochasticLocalSearch lazyStochasticLocalSearchC = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 60);
+        // StochasticLocalSearch forwardStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.FORWARD);
+        // StochasticLocalSearch lazyStochasticLocalSearchA = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 10);
+        // StochasticLocalSearch lazyStochasticLocalSearchB = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 30);
+        // StochasticLocalSearch lazyStochasticLocalSearchC = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 60);
 
-        optimizers.add(forwardStochasticLocalSearch);
-        optimizers.add(lazyStochasticLocalSearchA);
-        optimizers.add(lazyStochasticLocalSearchB);
-        optimizers.add(lazyStochasticLocalSearchC);
+        MemeticAlgorithm forwardLamarckianMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.FORWARD);
+        MemeticAlgorithm lazyBaldwinianMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.BALDWINIAN, NeighborhoodFunction.LAZY);
+        MemeticAlgorithm lazyLamarckianMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.LAZY);
+
+        optimizers.add(forwardLamarckianMemeticAlgorithm);
+        optimizers.add(lazyBaldwinianMemeticAlgorithm);
+        optimizers.add(lazyLamarckianMemeticAlgorithm);
     }
 
     @Override
     public void run() {
         for (Optimizer optimizer : optimizers) {
             runStochasticOptimizer(optimizer);
+            logger.info("Operator critic distributions: {}", Individual.operatorCritic.getRelativeImprovements());
         }
     }
 
@@ -88,17 +94,18 @@ public final class ComparativeExperiment extends Experiment {
     }
 
     private void getTimeEstimate() {
+        int setupTime = 1;
         int optimizers = this.optimizers.size();
-        int durationInMinutes = Parameters.RUNS * optimizers * Parameters.MAX_RUNNING_TIME / 60;
+        int durationInMinutes = Parameters.RUNS * optimizers * Parameters.MAX_RUNNING_TIME / 60 + setupTime;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         String estimatedTimeOfCompletion = LocalDateTime.now().plus(Duration.of(durationInMinutes, ChronoUnit.MINUTES)).format(formatter);
-        logger.info("Estimated experiment duration: {}", durationInMinutes);
-        logger.info("You can come back at around: {}", estimatedTimeOfCompletion);
+        logger.info("Estimated experiment duration: {} minutes.", durationInMinutes);
+        logger.info("You can come back at around: {}.", estimatedTimeOfCompletion);
         logger.info("Remember to keep the computer plugged in!");
     }
 
     public static void main(String[] args) {
-        logger.info("Running comparative SLS experiment ...");
+        logger.info("Running comparative MA experiment ...");
         ComparativeExperiment comparativeExperiment = new ComparativeExperiment();
         comparativeExperiment.getTimeEstimate();
         comparativeExperiment.run();

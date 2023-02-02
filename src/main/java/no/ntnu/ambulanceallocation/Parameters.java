@@ -50,5 +50,6 @@ public final class Parameters {
     // MA specific
     public static double IMPROVE_PROBABILITY = 0.1;
     public static int LOCAL_NEIGHBORHOOD_MAX_SIZE = 100;
+    public static boolean USE_OPERATOR_CRITIC = true;
 
 }
