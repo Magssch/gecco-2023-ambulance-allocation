@@ -1,3 +1,4 @@
+
 import subprocess
 import sys
 from itertools import product
@@ -10,18 +11,18 @@ optimizer = "ma"
 
 meta_parameters = {
     "number_of_runs": 1,
-    "running_time": 4,
-    "max_permutations": 5,
+    "running_time": 15,
+    "max_permutations": 2,
 }
 
 param_grid = {
-    "seeding_size": [1, 2, 3],
-    "population_size": [30, 40, 50],
-    "elite_size": [2, 4, 6],
-    "tournament_size": [2, 4, 6],
-    "crossover_probability": [0.05, 0.1, 0.2, 0.3],
-    "mutation_probability": [0.05, 0.1, 0.2, 0.3],
-    "improve_probability": [0.05, 0.1, 0.2, 0.3] if optimizer == "ma" else [0.0],
+    "seeding_size": [2],
+    "population_size": [30, 40],
+    "elite_size": [2, 4],
+    "tournament_size": [5],
+    "crossover_probability": [0.2],
+    "mutation_probability": [0.2],
+    "improve_probability": [0.2, 0.3] if optimizer == "ma" else [0.0],
 }
 
 # Create a list of all permutations in the parameter grid
