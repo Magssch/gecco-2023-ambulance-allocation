@@ -1,11 +1,11 @@
 package no.ntnu.ambulanceallocation;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
 import no.ntnu.ambulanceallocation.optimization.initializer.Random;
 import no.ntnu.ambulanceallocation.simulation.DispatchPolicy;
-
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 public final class Parameters {
     // General
@@ -17,8 +17,8 @@ public final class Parameters {
     public static final LocalDateTime START_DATE_TIME = LocalDateTime.of(2017, 8, 7, 0, 0, 0);
     public static final LocalDateTime END_DATE_TIME = LocalDateTime.of(2017, 8, 14, 0, 0, 0);
 
-    public static final int NUMBER_OF_AMBULANCES_DAY = 39; // 45 * 87.1% H&A incidents
-    public static final int NUMBER_OF_AMBULANCES_NIGHT = 22; // 29 * 74.5% H&A incidents
+    public static final int NUMBER_OF_AMBULANCES_DAY = 39; // 45 * 87.2% H&A incidents
+    public static final int NUMBER_OF_AMBULANCES_NIGHT = 22; // 29 * 75.6% H&A incidents
 
     public static final LocalTime DAY_SHIFT_START = LocalTime.of(8, 0);
     public static final LocalTime NIGHT_SHIFT_START = LocalTime.of(20, 0);
