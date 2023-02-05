@@ -96,10 +96,10 @@ public class StochasticLocalSearch implements Optimizer {
                 } else {
                     if (Utils.randomDouble() < Parameters.NOISE_PROBABILITY) {
                         logger.info("{} flips: {} (n)", getAbbreviation(), flips);
-                        solution.noiseStep();
+                        solution = solution.noiseStep();
                     } else {
                         logger.info("{} flips: {} (g)", getAbbreviation(), flips);
-                        solution.greedyStep(neighborhoodFunction, neighborhoodSize);
+                        solution = solution.greedyStep(neighborhoodFunction, neighborhoodSize);
                     }
                 }
 

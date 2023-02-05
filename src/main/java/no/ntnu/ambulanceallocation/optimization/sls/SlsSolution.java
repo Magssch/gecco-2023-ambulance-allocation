@@ -1,9 +1,5 @@
 package no.ntnu.ambulanceallocation.optimization.sls;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
 import no.ntnu.ambulanceallocation.optimization.initializer.Random;
@@ -12,6 +8,12 @@ import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SlsSolution extends Solution {
 
@@ -26,10 +28,6 @@ public class SlsSolution extends Solution {
 
     public SlsSolution(Config config) {
         super(initializer, config);
-    }
-
-    private SlsSolution(List<List<Integer>> variables) {
-        super(variables);
     }
 
     public SlsSolution(Solution solution) {
@@ -48,11 +46,17 @@ public class SlsSolution extends Solution {
         setAllocation(variableSet, variable, variableValue);
     }
 
-    public void noiseStep() {
+    public SlsSolution noiseStep() {
         int randomVariableSet = Utils.randomInt(getAllocation().size());
         int randomVariable = Utils.randomIndexOf(getAllocation().get(randomVariableSet));
-        SlsSolution randomNeighbor = new SlsSolution(this, randomVariableSet, randomVariable);
-        copy(randomNeighbor);
+        int randomVariableValue = Utils.randomInt(MAX_VALUE);
+
+        int currentValue = getAllocation().get(randomVariableSet).get(randomVariable);
+        while (randomVariableValue == currentValue) {
+            randomVariableValue = Utils.randomInt(MAX_VALUE);
+        }
+
+        return new SlsSolution(this, randomVariableSet, randomVariable, randomVariableValue);
     }
 
     public SlsSolution greedyStep(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
@@ -64,10 +68,7 @@ public class SlsSolution extends Solution {
         logger.info("Neighbourhood size was: {}", neighborhood.size());
         neighborhood.parallelStream().forEach(Solution::getFitness);
         Collections.sort(neighborhood);
-        SlsSolution bestNeighbor = neighborhood.get(0);
-
-        copy(bestNeighbor);
-        return this;
+        return neighborhood.get(0);
     }
 
     public void restartStep() {
@@ -89,6 +90,7 @@ public class SlsSolution extends Solution {
         for (int variableSet = 0; variableSet < getAllocation().size(); variableSet++) {
             for (int variable = 0; variable < getAllocation().get(variableSet).size(); variable++) {
                 for (int variableValue = 0; variableValue < MAX_VALUE; variableValue++) {
+
                     int currentValue = getAllocation().get(variableSet).get(variable);
                     if (variableValue != currentValue) {
                         neighborhood.add(new SlsSolution(this, variableSet, variable, variableValue));
@@ -100,13 +102,7 @@ public class SlsSolution extends Solution {
     }
 
     private List<SlsSolution> getLazyNeighborhood(int neighborhoodSize) {
-        List<SlsSolution> neighborhood = new ArrayList<>();
-        for (int attempt = 0; attempt < neighborhoodSize; attempt++) {
-            int randomVariableSet = Utils.randomInt(getAllocation().size());
-            int randomVariable = Utils.randomIndexOf(getAllocation().get(randomVariableSet));
-            neighborhood.add(new SlsSolution(this, randomVariableSet, randomVariable));
-        }
-        return neighborhood;
+        return Stream.generate(this::noiseStep).limit(neighborhoodSize).collect(Collectors.toList());
     }
 
     private List<Integer> forwardStep(List<Integer> variableSet, int variable) {

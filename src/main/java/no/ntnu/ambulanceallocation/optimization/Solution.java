@@ -1,14 +1,14 @@
 package no.ntnu.ambulanceallocation.optimization;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
-
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public abstract class Solution implements Comparable<Solution> {
 
@@ -76,17 +76,15 @@ public abstract class Solution implements Comparable<Solution> {
     }
 
     protected void setAllocation(int subAllocation, int variable, int variableValue) {
-        Integer previousValue = this.allocation.get(subAllocation).set(variable, variableValue);
-        hasAllocationChanged = !previousValue.equals(variableValue);
+        int previousValue = this.allocation.get(subAllocation).set(variable, variableValue);
+        hasAllocationChanged = previousValue != variableValue;
+        this.allocation.get(subAllocation).set(variable, variableValue);
     }
 
     protected void setAllocation(List<List<Integer>> allocation) {
         Allocation newAllocation = new Allocation(allocation);
-        if (this.allocation != null && this.allocation.equals(newAllocation)) {
-            return;
-        }
+        hasAllocationChanged = !newAllocation.equals(this.allocation);
         this.allocation = newAllocation;
-        hasAllocationChanged = true;
     }
 
     @Override
@@ -106,9 +104,7 @@ public abstract class Solution implements Comparable<Solution> {
             return true;
         if (!(o instanceof Solution solution))
             return false;
-        return Stream.concat(getDayShiftAllocation().stream().sorted(), getNightShiftAllocation().stream().sorted())
-                .equals(Stream.concat(solution.getDayShiftAllocation().stream().sorted(),
-                        solution.getNightShiftAllocation().stream().sorted()));
+        return hashCode() == solution.hashCode();
     }
 
     @Override
