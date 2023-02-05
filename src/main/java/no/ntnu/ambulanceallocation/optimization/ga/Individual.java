@@ -163,6 +163,7 @@ public class Individual extends Solution {
     // Memetic method
     private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
             boolean greedy) {
+
         List<Integer> baseStationDayAmbulanceProportionList = this.getAllocation()
                 .getBaseStationDayAmbulanceProportionList();
         List<Integer> baseStationNightAmbulanceProportionList = this.getAllocation()
@@ -186,66 +187,48 @@ public class Individual extends Solution {
         List<List<Integer>> nightSubChromosomeNeighbors = new ArrayList<>();
         nightSubChromosomeNeighbors.add(this.getAllocation().getNightShiftAllocation());
 
-        for (Integer highStation : baseStationDayAmbulanceProportionList.subList(0, dayHighestN)) {
-            for (Integer lowStation : baseStationDayAmbulanceProportionList.subList(
+        for (int highStation : baseStationDayAmbulanceProportionList.subList(0, dayHighestN)) {
+            for (int lowStation : baseStationDayAmbulanceProportionList.subList(
                     baseStationDayAmbulanceProportionList.size() - dayLowestN,
                     baseStationDayAmbulanceProportionList.size())) {
-                if (highStation == lowStation || getAllocation().getDayShiftAllocation().indexOf(highStation) == -1) {
+                if (highStation == lowStation || !getAllocation().getDayShiftAllocation().contains(highStation)) {
                     continue;
                 }
                 List<Integer> newChromosome = new ArrayList<>(getAllocation().getDayShiftAllocation());
-                try {
-                    newChromosome.set(newChromosome.indexOf(highStation), lowStation);
-                } catch (Exception e) {
-                    System.err.println(e);
-                    System.err.println("dayHighestN: " + dayHighestN + " dayLowestN: " + dayLowestN + " nightHighestN: "
-                            + nightHighestN + " nightLowestN: " + nightLowestN);
-                    System.err
-                            .println("Error: " + highStation + " " + lowStation + " " + newChromosome);
-                    System.err.println("day ambulance frequency map: " + baseStationDayAmbulanceProportionList);
-                    System.err.println(
-                            "day ambulance frequency map: " + getAllocation().getDayAmbulanceStationFrequency());
-                    System.err.println();
-                }
+                newChromosome.set(newChromosome.indexOf(highStation), lowStation);
                 daySubChromosomeNeighbors.add(newChromosome);
             }
         }
 
-        for (Integer highStation : baseStationNightAmbulanceProportionList.subList(0, nightHighestN)) {
-            for (Integer lowStation : baseStationNightAmbulanceProportionList.subList(
+        for (int highStation : baseStationNightAmbulanceProportionList.subList(0, nightHighestN)) {
+            for (int lowStation : baseStationNightAmbulanceProportionList.subList(
                     baseStationNightAmbulanceProportionList.size() - nightLowestN,
                     baseStationNightAmbulanceProportionList.size())) {
-                if (highStation == lowStation || getAllocation().getNightShiftAllocation().indexOf(highStation) == -1) {
+                if (highStation == lowStation || !getAllocation().getNightShiftAllocation().contains(highStation)) {
                     continue;
                 }
                 List<Integer> newChromosome = new ArrayList<>(getAllocation().getNightShiftAllocation());
-                try {
-                    newChromosome.set(newChromosome.indexOf(highStation), lowStation);
-                } catch (Exception e) {
-                    System.err.println(e);
-                    System.err
-                            .println("Error: " + highStation + " " + lowStation + " " + newChromosome);
-                    System.err.println("night ambulance frequency map: " + baseStationNightAmbulanceProportionList);
-                    System.err.println(
-                            "night ambulance frequency map: " + getAllocation().getNightAmbulanceStationFrequency());
-                }
+                newChromosome.set(newChromosome.indexOf(highStation), lowStation);
                 nightSubChromosomeNeighbors.add(newChromosome);
             }
         }
+
         int neighborhoodSize = daySubChromosomeNeighbors.size() * nightSubChromosomeNeighbors.size();
+        System.out.println("Neighborhood size: " + neighborhoodSize + "");
         List<Integer> randomSubset = new ArrayList<>();
         if (neighborhoodSize > Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE) {
             randomSubset = Utils.random.ints(0, neighborhoodSize).distinct()
                     .limit(Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE).boxed()
                     .collect(Collectors.toList());
         }
+
         List<Individual> neighboorhood = new ArrayList<>();
         for (int i = 0; i < daySubChromosomeNeighbors.size(); i++) {
             for (int j = 0; j < nightSubChromosomeNeighbors.size(); j++) {
                 if (neighborhoodSize <= Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE || randomSubset.contains(i * j)) {
                     Individual neighbor = new Individual(
                             List.of(daySubChromosomeNeighbors.get(i), nightSubChromosomeNeighbors.get(j)));
-                    if (neighbor == this) {
+                    if (neighbor.equals(this)) {
                         throw new IllegalArgumentException("Neighbor is not a neighbor!");
                     }
                     if (greedy && neighbor.getFitness() <= this.getFitness()) {
