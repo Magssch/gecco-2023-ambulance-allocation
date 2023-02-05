@@ -1,5 +1,15 @@
 package no.ntnu.ambulanceallocation.optimization.ga;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
@@ -11,16 +21,6 @@ import no.ntnu.ambulanceallocation.simulation.BaseStation;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Tuple;
 import no.ntnu.ambulanceallocation.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Individual extends Solution {
 
@@ -47,9 +47,10 @@ public class Individual extends Solution {
             List<Integer> newChromosome = new ArrayList<>(chromosome);
             for (int locus = 0; locus < newChromosome.size(); locus++) {
                 if (Utils.randomDouble() < mutationProbability) {
-                    switch (Utils.randomInt(2)) {
-                        case 0 -> swapMutation(locus, newChromosome);
-                        case 1 -> bitFlipMutation(locus, newChromosome);
+                    if (Utils.randomDouble() < 0.25) {
+                        swapMutation(locus, newChromosome);
+                    } else {
+                        bitFlipMutation(locus, newChromosome);
                     }
                 }
             }
@@ -104,8 +105,9 @@ public class Individual extends Solution {
     }
 
     // Memetic method
-    public void improve(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction, int neighborhoodSize,
-                        double improveProbability) {
+    public void improve(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
+            int neighborhoodSize,
+            double improveProbability) {
         if (Utils.randomDouble() < improveProbability) {
             // find the best individual in population
             switch (evolutionStrategy) {
@@ -139,8 +141,8 @@ public class Individual extends Solution {
         int operator = selectImproveOperator();
         Individual individual = switch (operator) {
             case 0 ->
-                    robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, Utils.randomInt(3) + 1,
-                            Utils.randomInt(3) + 1, true);
+                robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, Utils.randomInt(3) + 1,
+                        Utils.randomInt(3) + 1, true);
             case 1 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, -1,
                     Utils.randomInt(3) + 1, -1, true);
             case 2 -> robinHoodNeighborhoodSearch(-1, Utils.randomInt(3) + 1,
@@ -151,7 +153,7 @@ public class Individual extends Solution {
                 yield new Individual(bestNeighborhood);
             }
             default ->
-                    throw new IllegalStateException(String.format("Operator %d not present. Illegal value.", operator));
+                throw new IllegalStateException(String.format("Operator %d not present. Illegal value.", operator));
         };
 
         operatorCritic.assignCredit(operator, this.getFitness() - individual.getFitness());
@@ -160,7 +162,7 @@ public class Individual extends Solution {
 
     // Memetic method
     private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
-                                                   boolean greedy) {
+            boolean greedy) {
         List<Integer> baseStationDayAmbulanceProportionList = this.getAllocation()
                 .getBaseStationDayAmbulanceProportionList();
         List<Integer> baseStationNightAmbulanceProportionList = this.getAllocation()
@@ -233,7 +235,7 @@ public class Individual extends Solution {
         int neighborhoodSize = daySubChromosomeNeighbors.size() * nightSubChromosomeNeighbors.size();
         List<Integer> randomSubset = new ArrayList<>();
         if (neighborhoodSize > Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE) {
-            randomSubset = ThreadLocalRandom.current().ints(0, neighborhoodSize).distinct()
+            randomSubset = Utils.random.ints(0, neighborhoodSize).distinct()
                     .limit(Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE).boxed()
                     .collect(Collectors.toList());
         }
