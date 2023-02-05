@@ -90,6 +90,7 @@ public class StochasticLocalSearch implements Optimizer {
             while (elapsedTime(startTime) < Parameters.MAX_RUNNING_TIME && tries < Parameters.MAX_TRIES) {
                 if (Utils.randomDouble() < Parameters.RESTART_PROBABILITY) {
                     solution.restartStep();
+                    tries++;
                     flips = 0;
                     logger.info("{} tries: {}", getAbbreviation(), tries);
                     logger.info("{} best fitness: {}", getAbbreviation(), bestSolution.getFitness());
