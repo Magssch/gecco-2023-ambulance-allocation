@@ -1,31 +1,31 @@
 package no.ntnu.ambulanceallocation.simulation;
 
+import no.ntnu.ambulanceallocation.simulation.grid.Coordinate;
+
 import java.util.Arrays;
 import java.util.List;
 
-import no.ntnu.ambulanceallocation.simulation.grid.Coordinate;
-
 public enum BaseStation {
 
-    EIDSVOLL(0, false, 287187, 6692448, 33402),
-    NES(1, false, 304206, 6669953, 22355),
-    ULLENSAKER(2, false, 286455, 6671754, 42865),
-    AURSKOG_HOLAND(3, false, 307577, 6642937, 18130),
-    LORENSKOG(4, false, 275840, 6650643, 117049),
-    NITTEDAL(5, false, 270631, 6663254, 20280),
-    BROBEKK(6, false, 267085, 6651035, 76221),
-    SENTRUM(7, false, 262948, 6649765, 110350),
-    ULLEVAAL(8, false, 261774, 6652003, 80759),
-    NORDRE_FOLLO(9, false, 266827, 6627037, 44551),
-    SONDRE_FOLLO(10, false, 259265, 6621267, 64139),
-    PRINSDAL(11, false, 265048, 6640259, 68728),
-    ASKER(12, false, 244478, 6641283, 57008),
-    BAERUM(13, false, 248901, 6648585, 58896),
-    SMESTAD(14, false, 259127, 6652543, 146058),
-    RYEN(15, true, 265439, 6646945, 127670),
-    GRORUD(16, true, 270248, 6654139, 74892),
-    SKEDSMOKORSET(17, true, 279154, 6657789, 46995),
-    BEKKESTUA(18, true, 253295, 6650494, 54784);
+    EIDSVOLL(0, false, 287187, 6692448, 33962),
+    NES(1, false, 304206, 6669953, 22729),
+    ULLENSAKER(2, false, 286455, 6671754, 44655),
+    AURSKOG_HOLAND(3, false, 307577, 6642937, 18445),
+    LORENSKOG(4, false, 275840, 6650643, 119772),
+    NITTEDAL(5, false, 270631, 6663254, 20617),
+    BROBEKK(6, false, 267085, 6651035, 77541),
+    SENTRUM(7, false, 262948, 6649765, 111877),
+    ULLEVAAL(8, false, 261774, 6652003, 82129),
+    NORDRE_FOLLO(9, false, 266827, 6627037, 44897),
+    SONDRE_FOLLO(10, false, 259265, 6621267, 65560),
+    PRINSDAL(11, false, 265048, 6640259, 69160),
+    ASKER(12, false, 244478, 6641283, 57108),
+    BAERUM(13, false, 248901, 6648585, 59354),
+    SMESTAD(14, false, 259127, 6652543, 147866),
+    RYEN(15, true, 265439, 6646945, 128625),
+    GRORUD(16, true, 270248, 6654139, 75223),
+    SKEDSMOKORSET(17, true, 279154, 6657789, 47455),
+    BEKKESTUA(18, true, 253295, 6650494, 55118);
 
     private final int id;
     private final boolean isStandbyPoint;
