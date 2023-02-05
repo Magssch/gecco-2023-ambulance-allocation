@@ -99,7 +99,7 @@ public class StochasticLocalSearch implements Optimizer {
                         solution.noiseStep();
                     } else {
                         logger.info("{} flips: {} (g)", getAbbreviation(), flips);
-                        solution.greedyStep(neighborhoodFunction, computeNeighborhoodSize());
+                        solution.greedyStep(neighborhoodFunction, neighborhoodSize);
                     }
                 }
 
@@ -135,11 +135,6 @@ public class StochasticLocalSearch implements Optimizer {
             case HAMMING -> "HSLS";
             case LAZY -> String.format("LazySLS_%d", neighborhoodSize);
         };
-    }
-
-    private int computeNeighborhoodSize() {
-        dynamicNeighborhoodSize *= (1 + Parameters.CONDUCTIVITY / 10_000f);
-        return Math.round(dynamicNeighborhoodSize);
     }
 
     private void saveSummary(int tries, int flips) {

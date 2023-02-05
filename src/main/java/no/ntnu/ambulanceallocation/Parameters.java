@@ -34,7 +34,6 @@ public final class Parameters {
     public static final double RESTART_PROBABILITY = 0.025;
     public static final double NOISE_PROBABILITY = 0.75;
     public static final int LAZY_NEIGHBOURHOOD_SIZE = 10;
-    public static final int CONDUCTIVITY = 75; // 0-1000, 0=No change, 1000=Rapid change
 
     // Genetic & Memetic Algorithm
     public static Initializer INITIALIZER = new Random();
