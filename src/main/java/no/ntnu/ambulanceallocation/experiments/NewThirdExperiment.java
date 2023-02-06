@@ -36,19 +36,18 @@ public class NewThirdExperiment extends Experiment {
             // 0.25,
             // 0.3,
             // 0.35,
-            0.4,
+            // 0.4,
             0.45,
             0.5,
             0.55,
-            0.6,
-            0.65,
-            // 0.7,
-            // 0.75,
-            // 0.8,
-            // 0.85,
-            // 0.9,
-            // 0.95,
-            1.0);
+            0.6
+    // 0.65,
+    // 0.7,
+    // 0.75,
+    // 0.8,
+    // 0.85,
+    // 0.9
+    );
 
     @Override
     public void run() {
@@ -76,7 +75,7 @@ public class NewThirdExperiment extends Experiment {
             runStochasticOptimizer(ga);
 
             logger.info("Testing model 'MA'");
-            Optimizer ma = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.FORWARD,
+            Optimizer ma = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.LAZY,
                     Parameters.LAZY_NEIGHBOURHOOD_SIZE,
                     Config.withNumAmbulances(numDayAmbulances, numNightAmbulances));
             runStochasticOptimizer(ma);
@@ -89,7 +88,6 @@ public class NewThirdExperiment extends Experiment {
         String optimizerName = optimizer.getAbbreviation();
         double overallBestFitness = Double.POSITIVE_INFINITY;
         Allocation overallBestAllocation = new Allocation();
-        Result overallBestRunStatistics = new Result();
 
         List<Double> bestFitnessAtTermination = new ArrayList<>();
 
@@ -102,7 +100,6 @@ public class NewThirdExperiment extends Experiment {
 
             if (solution.getFitness() < overallBestFitness) {
                 overallBestAllocation = solution.getAllocation();
-                overallBestRunStatistics = optimizer.getRunStatistics();
             }
 
             logger.info("{} run {}/{} completed.", optimizerName, i + 1, Parameters.RUNS);

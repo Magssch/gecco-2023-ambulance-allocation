@@ -46,9 +46,14 @@ public class ParameterSearch extends Experiment {
             Parameters.CROSSOVER_PROBABILITY = Double.parseDouble(params[4]);
             Parameters.MUTATION_PROBABILITY = Double.parseDouble(params[5]);
             Parameters.IMPROVE_PROBABILITY = Double.parseDouble(params[6]);
+            Parameters.USE_SWAP_MUTATION = Boolean.parseBoolean(params[7]);
+            Parameters.USE_OPERATOR_CRITIC = Boolean.parseBoolean(params[8]);
+
+            System.err.println("Running with parameters: " + parameterConfig);
 
             runStochasticOptimizer(optimizer);
         }
+        saveResults();
     }
 
     @Override

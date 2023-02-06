@@ -160,10 +160,6 @@ public class Ambulance {
                 while (currentLocationIndex < path.length - 1
                         && path[currentLocationIndex + 1].timeTo(destination) > currentTimeToDestination) {
                     currentLocationIndex++;
-                    if (!(currentLocationIndex <= path.length - 1)) {
-                        System.out.println(currentLocationIndex);
-                        System.out.println(path);
-                    }
                 }
 
                 currentLocation = path[currentLocationIndex];
