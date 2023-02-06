@@ -1,11 +1,14 @@
 import os
 
 import pandas as pd
-
-from common import SIMULATION_FOLDER, VISUALIZATION_FOLDER, ensure_folder_exists
+from common import (SIMULATION_FOLDER, VISUALIZATION_FOLDER,
+                    ensure_folder_exists)
 from save_statistics import save_aggregated_allocations, save_statistics
-from visualize import regular_plot, sorted_plot, visualize_sls_run, visualize_ga_run, plot_box_plot, allocation_plot, \
-    visualize_geographic_response_time_distribution
+from visualize import (allocation_plot, plot_box_plot, regular_plot,
+                       sorted_plot, visualize_fourth_experiment,
+                       visualize_ga_run,
+                       visualize_geographic_response_time_distribution,
+                       visualize_sls_run)
 
 
 def split_result_name(result_name: str) -> tuple[str, str]:
@@ -46,7 +49,7 @@ def visualize_results(experiment_files: list[str], include_allocations=False) ->
         ensure_folder_exists(f"{VISUALIZATION_FOLDER}/{experiment_name}")
         df = pd.read_csv(result_path)
 
-        if result_type == "response_times":
+        if result_type == "response_times" and "new_third" not in result_file_name:
             visualize_geographic_response_time_distribution(
                 df,
                 get_visualization_name('geographic_distribution', experiment_name),
@@ -78,6 +81,7 @@ def visualize_results(experiment_files: list[str], include_allocations=False) ->
 def main():
     experiment_files = collect_experiment_files()
     visualize_results(experiment_files, include_allocations=False)
+    visualize_fourth_experiment()
 
 
 if __name__ == '__main__':

@@ -9,8 +9,8 @@ import no.ntnu.ambulanceallocation.simulation.DispatchPolicy;
 
 public final class Parameters {
     // General
-    public static int RUNS = 5;
-    public static int MAX_RUNNING_TIME = (int) (3.0 * 2); // minutes
+    public static int RUNS = 2;
+    public static int MAX_RUNNING_TIME = (int) (3.0 * 1); // minutes
 
     // ************************ Simulation ************************
     public static final int BUFFER_SIZE = 4; // hours
@@ -35,8 +35,8 @@ public final class Parameters {
     // public static final LocalDateTime END_DATE_TIME = LocalDateTime.of(2018, 12,
     // 31, 0, 0, 0);
 
-    public static final int NUMBER_OF_AMBULANCES_DAY = 39; // 45 * 87.2% H&A incidents
-    public static final int NUMBER_OF_AMBULANCES_NIGHT = 22; // 29 * 75.6% H&A incidents
+    public static int NUMBER_OF_AMBULANCES_DAY = 39; // 45 * 87.2% H&A incidents
+    public static int NUMBER_OF_AMBULANCES_NIGHT = 22; // 29 * 75.6% H&A incidents
 
     // Simulation visualization
     public static final int GUI_UPDATE_INTERVAL = 400; // every x milliseconds

@@ -1,28 +1,18 @@
 import re
 from collections import Counter
 
+import geojson_tools
+import map_tools
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.ticker import (
-    FixedFormatter,
-    FixedLocator,
-    FuncFormatter,
-    MaxNLocator,
-    MultipleLocator,
-)
-
-import geojson_tools
-import map_tools
 import styles
-from common import (
-    OUTPUT_FOLDER,
-    SIMULATION_FOLDER,
-    VISUALIZATION_FOLDER,
-    ensure_folder_exists,
-)
+from common import (OUTPUT_FOLDER, SIMULATION_FOLDER, VISUALIZATION_FOLDER,
+                    ensure_folder_exists)
 from coordinate_converter import ssb_grid_id_to_utm_centroid
+from matplotlib.ticker import (FixedFormatter, FixedLocator, FuncFormatter,
+                               MaxNLocator, MultipleLocator)
 from save_statistics import save_aggregated_allocations, save_statistics
 
 DEFAULT_COLORS = [
@@ -98,9 +88,9 @@ def index_plot(
     if not legend:
         ax.get_legend().remove()
 
-    ax.xaxis.set_major_locator(MultipleLocator(10))
+    # ax.xaxis.set_major_locator(MultipleLocator(10))
     plt.ylim(bottom=y_bottom, top=y_top)
-    plt.xlim(left=x_left)
+    # plt.xlim(left=x_left)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -432,14 +422,15 @@ def visualize_fourth_experiment():
     print("Visualizing fourth experiment data...")
 
     ensure_folder_exists(f"{VISUALIZATION_FOLDER}/fourth_experiment")
-    file = f"{SIMULATION_FOLDER}/fourth_experiment_average_response_times_ratio.csv"
+    file = f"{SIMULATION_FOLDER}/new_third_experiment_best_fitness.csv"
     df = pd.read_csv(file)
-    df.set_index("num_ambulances", inplace=True)
+    df.set_index("ratio", inplace=True)
+    print(df)
     index_plot(
         df,
         "fourth_experiment/average_response_times_ratio_log",
         title="Average response times",
-        xlabel="Number of day ambulances",
+        xlabel="Ratio of ambulances",
         ylabel="average response time / (s)",
         log_scale=True,
     )
@@ -448,24 +439,24 @@ def visualize_fourth_experiment():
         df,
         "fourth_experiment/average_response_times_ratio",
         title="Average response times",
-        xlabel="Number of day ambulances",
+        xlabel="Ratio of ambulances",
         ylabel="average response time / (s)",
         y_bottom=0,
-        y_top=5000,
+        # y_top=5000,
     )
 
-    file = f"{SIMULATION_FOLDER}/fourth_experiment_average_response_times_all.csv"
-    df = pd.read_csv(file)
-    df = df[(df.num_ambulances_day >= 5) & (df.num_ambulances_night >= 5)]
-    multi_axis_plot(
-        df,
-        "fourth_experiment/average_response_times_all",
-        title="Average response times",
-        xlabel="No. day ambulances",
-        ylabel="No. night ambulances",
-        zlabel="average response time / (s)",
-        log_scale=True,
-    )
+    # file = f"{SIMULATION_FOLDER}/fourth_experiment_average_response_times_all.csv"
+    # df = pd.read_csv(file)
+    # df = df[(df.num_ambulances_day >= 5) & (df.num_ambulances_night >= 5)]
+    # multi_axis_plot(
+    #     df,
+    #     "fourth_experiment/average_response_times_all",
+    #     title="Average response times",
+    #     xlabel="No. day ambulances",
+    #     ylabel="No. night ambulances",
+    #     zlabel="average response time / (s)",
+    #     log_scale=True,
+    # )
     print("done.")
 
 
