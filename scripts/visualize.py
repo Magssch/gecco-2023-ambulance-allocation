@@ -11,8 +11,7 @@ import styles
 from common import (OUTPUT_FOLDER, SIMULATION_FOLDER, VISUALIZATION_FOLDER,
                     ensure_folder_exists)
 from coordinate_converter import ssb_grid_id_to_utm_centroid
-from matplotlib.ticker import (FixedFormatter, FixedLocator, FuncFormatter,
-                               MaxNLocator, MultipleLocator)
+from matplotlib.ticker import FuncFormatter, MaxNLocator
 from save_statistics import save_aggregated_allocations, save_statistics
 
 DEFAULT_COLORS = [
@@ -217,7 +216,7 @@ def plot_box_plot(df: pd.DataFrame, output_file_name: str) -> None:
 def visualize_sls_run(df: pd.DataFrame, output_file_name: str) -> None:
     name = output_file_name.split("/")[-1]
 
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     ax.plot(df.index, df['current'], label="current")
     ax.plot(df.index, df['best'], label="best")
 
@@ -228,12 +227,10 @@ def visualize_sls_run(df: pd.DataFrame, output_file_name: str) -> None:
             ax.axvline(x=i, linestyle="--", c="k")
 
     ax.set_title(name.upper())
-    ax.set_xlabel("tries")
+    ax.set_xlabel("flips")
     ax.set_ylabel("fitness")
 
-    ax.xaxis.set_major_locator(FixedLocator(locators))
-    ax.xaxis.set_major_formatter(FixedFormatter(list(df.index + 1)))
-    ax.xaxis.set_minor_locator(MultipleLocator(1))
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.legend()
 
@@ -359,7 +356,7 @@ def visualize_first_experiment(include_allocations=False) -> None:
     )
 
     runs = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_runs.csv")
-    plot_box_plot(runs, f"first_experiment/runs")
+    plot_box_plot(runs, "first_experiment/runs")
     save_statistics(runs, "first_experiment_run_statistics")
 
     allocations = pd.read_csv(f"{SIMULATION_FOLDER}/first_experiment_allocations.csv")
