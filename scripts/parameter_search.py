@@ -1,4 +1,3 @@
-
 import subprocess
 import sys
 from itertools import product
@@ -7,26 +6,28 @@ import pandas as pd
 
 # Define the parameters for the grid search
 
-optimizer = "ma"
+optimizer = "ga"
 
 meta_parameters = {
     "number_of_runs": 1,
-    "running_time": 15,
-    "max_permutations": 2,
+    "running_time": 60,
+    # "max_permutations": 2,
 }
-
+# 3,40,4,5,0.2,0.1,0.15,true,true
 param_grid = {
-    "seeding_size": [2],
-    "population_size": [30, 40],
-    "elite_size": [2, 4],
+    "seeding_size": [3],
+    "population_size": [40],
+    "elite_size": [4, 6],
     "tournament_size": [5],
-    "crossover_probability": [0.2],
-    "mutation_probability": [0.2],
-    "improve_probability": [0.2, 0.3] if optimizer == "ma" else [0.0],
+    "crossover_probability": [0.15, 0.2, 0.25],
+    "mutation_probability": [0.05, 0.1, 0.15, 0.2],
+    "improve_probability": [0.15] if optimizer == "ma" else [0.0],
+    "use_swap_mutation": ["true"],
+    "use_operator_critic": ["true"] if optimizer == "ma" else ["false"],
 }
 
 # Create a list of all permutations in the parameter grid
-parameter_permutations_list = list(product(*param_grid.values()))[:meta_parameters["max_permutations"]]
+parameter_permutations_list = list(product(*param_grid.values()))
 
 print("Starting parameter search... Will run " + str(len(parameter_permutations_list)) + " experiments.")
 
@@ -62,8 +63,9 @@ results = {
     "crossover_probability": [params[4] for params in parameter_permutations_list],
     "mutation_probability": [params[5] for params in parameter_permutations_list],
     "improve_probability": [params[6] for params in parameter_permutations_list],
+    "use_swap_mutation": [params[7] for params in parameter_permutations_list],
+    "use_operator_critic": [params[8] for params in parameter_permutations_list],
     "fitness": fitness.split(","),
 }
-
 # Print the final dataframe
 pd.DataFrame(results).to_csv("output/parameter_search.csv", index=False)
