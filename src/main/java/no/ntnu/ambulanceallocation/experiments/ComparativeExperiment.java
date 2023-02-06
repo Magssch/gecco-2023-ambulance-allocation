@@ -1,16 +1,5 @@
 package no.ntnu.ambulanceallocation.experiments;
 
-import no.ntnu.ambulanceallocation.Parameters;
-import no.ntnu.ambulanceallocation.optimization.Allocation;
-import no.ntnu.ambulanceallocation.optimization.Optimizer;
-import no.ntnu.ambulanceallocation.optimization.Solution;
-import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
-import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
-import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
-import no.ntnu.ambulanceallocation.simulation.Simulation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,9 +7,23 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import no.ntnu.ambulanceallocation.Parameters;
+import no.ntnu.ambulanceallocation.optimization.Allocation;
+import no.ntnu.ambulanceallocation.optimization.Optimizer;
+import no.ntnu.ambulanceallocation.optimization.Solution;
+import no.ntnu.ambulanceallocation.optimization.ga.GeneticAlgorithm;
+import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
+import no.ntnu.ambulanceallocation.optimization.ma.MemeticAlgorithm;
+import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
+import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
+import no.ntnu.ambulanceallocation.simulation.Simulation;
+
 public final class ComparativeExperiment extends Experiment {
 
-    private static final Logger logger = LoggerFactory.getLogger(SecondExperiment.class);
+    private static final Logger logger = LoggerFactory.getLogger(ComparativeExperiment.class);
 
     private final Result allocations = new Result();
     private final Result responseTimes = new Result();
@@ -29,13 +32,12 @@ public final class ComparativeExperiment extends Experiment {
 
     public ComparativeExperiment() {
         // Setup
-        StochasticLocalSearch forwardStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.FORWARD);
-        StochasticLocalSearch hammingStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.HAMMING);
-        StochasticLocalSearch lazyStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.LAZY, 40);
+        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
+        MemeticAlgorithm lazyMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                NeighborhoodFunction.LAZY);
 
-        optimizers.add(forwardStochasticLocalSearch);
-        optimizers.add(hammingStochasticLocalSearch);
-        optimizers.add(lazyStochasticLocalSearch);
+        optimizers.add(geneticAlgorithm);
+        optimizers.add(lazyMemeticAlgorithm);
     }
 
     @Override
@@ -90,7 +92,8 @@ public final class ComparativeExperiment extends Experiment {
         int optimizers = this.optimizers.size();
         int durationInMinutes = Parameters.RUNS * optimizers * Parameters.MAX_RUNNING_TIME / 60 + setupTime;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        String estimatedTimeOfCompletion = LocalDateTime.now().plus(Duration.of(durationInMinutes, ChronoUnit.MINUTES)).format(formatter);
+        String estimatedTimeOfCompletion = LocalDateTime.now().plus(Duration.of(durationInMinutes, ChronoUnit.MINUTES))
+                .format(formatter);
         logger.info("Estimated experiment duration: {} minutes.", durationInMinutes);
         logger.info("You can come back at around: {}.", estimatedTimeOfCompletion);
         logger.info("Remember to keep the computer plugged in!");

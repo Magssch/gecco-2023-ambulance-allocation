@@ -24,10 +24,10 @@ import no.ntnu.ambulanceallocation.utils.Utils;
 
 public class Individual extends Solution {
 
-    public static final int NUMBER_OF_OPERATORS = 4;
-    public static final OperatorCritic operatorCritic = new OperatorCritic(NUMBER_OF_OPERATORS);
+    private static final Logger logger = LoggerFactory.getLogger(Individual.class);
 
-    private final Logger logger = LoggerFactory.getLogger(SlsSolution.class);
+    public static final int NUMBER_OF_OPERATORS = 6;
+    public static final OperatorCritic operatorCritic = new OperatorCritic(NUMBER_OF_OPERATORS);
 
     public Individual(List<List<Integer>> chromosomes) {
         super(chromosomes);
@@ -39,6 +39,11 @@ public class Individual extends Solution {
 
     public Individual(Solution solution) {
         super(solution);
+    }
+
+    private Individual(Individual root, int chromosomeNumber, int locus, int allele) {
+        this(root);
+        setAllocation(chromosomeNumber, locus, allele);
     }
 
     public void mutate(double mutationProbability) {
@@ -136,18 +141,16 @@ public class Individual extends Solution {
         return Utils.randomInt(NUMBER_OF_OPERATORS);
     }
 
-    // TODO: How to decide bounds for randomInt() calls?
     private Individual improve(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
         int operator = selectImproveOperator();
         Individual individual = switch (operator) {
-            case 0 ->
-                robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, Utils.randomInt(3) + 1,
-                        Utils.randomInt(3) + 1, true);
-            case 1 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, -1,
-                    Utils.randomInt(3) + 1, -1, true);
-            case 2 -> robinHoodNeighborhoodSearch(-1, Utils.randomInt(3) + 1,
-                    -1, Utils.randomInt(3) + 1, true);
-            case 3 -> {
+            case 0 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, Utils.randomInt(3) + 1,
+                    Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, true);
+            case 1 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, -1, Utils.randomInt(3) + 1, -1, true);
+            case 2 -> robinHoodNeighborhoodSearch(-1, Utils.randomInt(3) + 1, -1, Utils.randomInt(3) + 1, true);
+            case 3 -> robinHoodTakeFirst(Utils.randomInt(2) + 1);
+            case 4 -> robinHoodGiveFirst(Utils.randomInt(2) + 1);
+            case 5 -> {
                 SlsSolution slsSolution = new SlsSolution(this);
                 SlsSolution bestNeighborhood = slsSolution.greedyStep(neighborhoodFunction, neighborhoodSize);
                 yield new Individual(bestNeighborhood);
@@ -158,6 +161,48 @@ public class Individual extends Solution {
 
         operatorCritic.assignCredit(operator, this.getFitness() - individual.getFitness());
         return individual;
+    }
+
+    private Individual robinHoodTakeFirst(int takeFrom) {
+        int chromosomeNumber = Utils.randomIndexOf(getAllocation().allocation());
+        List<Integer> chromosome = getAllocation().get(chromosomeNumber);
+        List<Integer> baseStationAmbulanceProportionList = getAllocation()
+                .getBaseStationAmbulanceProportionList(chromosome);
+
+        List<Individual> neighborhood = new ArrayList<>();
+        Individual bestNeighbor = this;
+
+        for (int i = 0; i < takeFrom; i++) {
+            int overproportionateStation = baseStationAmbulanceProportionList.get(i);
+            int overproportionateIndex = bestNeighbor.getAllocation().get(chromosomeNumber)
+                    .indexOf(overproportionateStation);
+            for (int baseStationId : BaseStation.ids()) {
+                neighborhood.add(new Individual(bestNeighbor, chromosomeNumber, overproportionateIndex, baseStationId));
+            }
+            neighborhood.remove(overproportionateStation);
+            bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
+        }
+        return bestNeighbor;
+    }
+
+    private Individual robinHoodGiveFirst(int giveTo) {
+        int chromosomeNumber = Utils.randomIndexOf(getAllocation().allocation());
+        List<Integer> chromosome = getAllocation().get(chromosomeNumber);
+        List<Integer> baseStationAmbulanceProportionList = getAllocation()
+                .getBaseStationAmbulanceProportionList(chromosome);
+
+        List<Individual> neighborhood = new ArrayList<>();
+        Individual bestNeighbor = this;
+
+        for (int i = 0; i < giveTo; i++) {
+            int underproportionateStation = baseStationAmbulanceProportionList.get(BaseStation.size() - 1 - i);
+            for (int baseStationId : BaseStation.ids()) {
+                neighborhood
+                        .add(new Individual(bestNeighbor, chromosomeNumber, baseStationId, underproportionateStation));
+            }
+            bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
+        }
+        return bestNeighbor;
     }
 
     // Memetic method
