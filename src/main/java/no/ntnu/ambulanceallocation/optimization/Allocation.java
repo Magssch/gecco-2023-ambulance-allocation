@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -100,6 +101,21 @@ public record Allocation(List<List<Integer>> allocation) implements Iterable<Lis
     @Override
     public String toString() {
         return String.format("Day shift: %s\nNight shift: %s", getDayShiftAllocation(), getNightShiftAllocation());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof Allocation allocation))
+            return false;
+        return hashCode() == allocation.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                Stream.concat(getDayShiftAllocation().stream().sorted(), getNightShiftAllocation().stream().sorted()));
     }
 
 }

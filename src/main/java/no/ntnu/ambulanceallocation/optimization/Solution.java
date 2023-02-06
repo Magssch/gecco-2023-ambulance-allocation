@@ -1,14 +1,14 @@
 package no.ntnu.ambulanceallocation.optimization;
 
-import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
-import no.ntnu.ambulanceallocation.simulation.Config;
-import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
-import no.ntnu.ambulanceallocation.simulation.Simulation;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
+import no.ntnu.ambulanceallocation.simulation.Config;
+import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
+import no.ntnu.ambulanceallocation.simulation.Simulation;
 
 public abstract class Solution implements Comparable<Solution> {
 
