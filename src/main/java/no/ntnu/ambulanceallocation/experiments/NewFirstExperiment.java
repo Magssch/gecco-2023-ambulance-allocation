@@ -1,11 +1,23 @@
 package no.ntnu.ambulanceallocation.experiments;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.Allocation;
 import no.ntnu.ambulanceallocation.optimization.Optimizer;
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.optimization.ga.GeneticAlgorithm;
-import no.ntnu.ambulanceallocation.optimization.initializer.*;
+import no.ntnu.ambulanceallocation.optimization.initializer.AllCityCenter;
+import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
+import no.ntnu.ambulanceallocation.optimization.initializer.PopulationProportionate;
+import no.ntnu.ambulanceallocation.optimization.initializer.Random;
+import no.ntnu.ambulanceallocation.optimization.initializer.Uniform;
+import no.ntnu.ambulanceallocation.optimization.initializer.UniformRandom;
 import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
 import no.ntnu.ambulanceallocation.optimization.ma.MemeticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
@@ -13,12 +25,6 @@ import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
 import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
 import no.ntnu.ambulanceallocation.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class NewFirstExperiment extends Experiment {
 
@@ -50,7 +56,8 @@ public class NewFirstExperiment extends Experiment {
 
         StochasticLocalSearch forwardStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.FORWARD);
         GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
-        MemeticAlgorithm forwardMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.FORWARD);
+        MemeticAlgorithm forwardMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                NeighborhoodFunction.FORWARD);
 
         // Initializer (baselines)
         runStochasticInitializer(random);
@@ -61,8 +68,11 @@ public class NewFirstExperiment extends Experiment {
 
         // Optimizers (AI methods)
         runStochasticOptimizer(forwardStochasticLocalSearch);
+        Simulation.saveAllocationResults();
         runStochasticOptimizer(geneticAlgorithm);
+        Simulation.saveAllocationResults();
         runStochasticOptimizer(forwardMemeticAlgorithm);
+        Simulation.saveAllocationResults();
     }
 
     @Override

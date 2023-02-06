@@ -34,8 +34,7 @@ import no.ntnu.ambulanceallocation.utils.Utils;
 public final class Simulation {
 
     private static final Map<Config, List<NewCall>> memoizedEventList = new HashMap<>();
-    private static final List<Allocation> allocationResults = new ArrayList<>();
-    private static final List<Double> responseTimeResults = new ArrayList<>();
+    private static final Map<Allocation, Double> allocationResults = new HashMap<>();
 
     private final DoubleProperty simulationUpdateInterval;
     private final TriConsumer<LocalDateTime, Collection<Ambulance>, Collection<NewCall>> onTimeUpdate;
@@ -59,23 +58,35 @@ public final class Simulation {
         Runtime.getRuntime().addShutdownHook(allocationsSaveHook);
     }
 
-    private static void saveAllocationResults() {
+    public static void saveAllocationResults() {
         Map<Integer, String> baseStationMap = BaseStation.ids().stream()
                 .collect(Collectors.toMap(Function.identity(), v -> "0"));
 
+        List<List<Integer>> dayAmbulanceCounts = new ArrayList<>();
+        List<List<Integer>> nightAmbulanceCounts = new ArrayList<>();
+        List<Double> responseTimeResults = new ArrayList<>();
+
+        allocationResults.entrySet().stream().forEach(
+                a -> {
+                    dayAmbulanceCounts.add(a.getKey().getDayShiftAllocation());
+                    nightAmbulanceCounts.add(a.getKey().getNightShiftAllocation());
+                    responseTimeResults.add(a.getValue().doubleValue());
+                });
+        allocationResults.clear();
+
         Result simulationsResult = new Result();
         simulationsResult.saveColumn("Count of ambulances per base station for the day shift",
-                allocationResults.stream().map(a -> {
+                dayAmbulanceCounts.stream().map(a -> {
                     Map<Integer, String> baseStationMapCopy = new HashMap<>(baseStationMap);
-                    a.getDayShiftAllocation().stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()))
+                    a.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()))
                             .forEach(
                                     (k, v) -> baseStationMapCopy.put(k, v.toString()));
                     return baseStationMapCopy.values().stream().collect(Collectors.joining(" "));
                 }).toList());
         simulationsResult.saveColumn("Count of ambulances per base station for the night shift",
-                allocationResults.stream().map(a -> {
+                nightAmbulanceCounts.stream().map(a -> {
                     Map<Integer, String> baseStationMapCopy = new HashMap<>(baseStationMap);
-                    a.getNightShiftAllocation().stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()))
+                    a.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()))
                             .forEach(
                                     (k, v) -> baseStationMapCopy.put(k, v.toString()));
                     return baseStationMapCopy.values().stream().collect(Collectors.joining(" "));
@@ -83,7 +94,6 @@ public final class Simulation {
         simulationsResult.saveColumn("Response time", responseTimeResults);
         simulationsResult
                 .saveResults("allocation_response_times/%s".formatted(LocalDateTime.now()));
-
     }
 
     public Simulation(final Config config) {
@@ -213,8 +223,7 @@ public final class Simulation {
             }
 
         }
-        allocationResults.add(allocation);
-        responseTimeResults.add(responseTimes.average());
+        allocationResults.put(allocation, responseTimes.average());
         return responseTimes;
     }
 

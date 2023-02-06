@@ -73,12 +73,14 @@ public class NewThirdExperiment extends Experiment {
             logger.info("Testing model 'GA'");
             Optimizer ga = new GeneticAlgorithm(Config.withNumAmbulances(numDayAmbulances, numNightAmbulances));
             runStochasticOptimizer(ga);
+            Simulation.saveAllocationResults();
 
             logger.info("Testing model 'MA'");
             Optimizer ma = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.LAZY,
                     Parameters.LAZY_NEIGHBOURHOOD_SIZE,
                     Config.withNumAmbulances(numDayAmbulances, numNightAmbulances));
             runStochasticOptimizer(ma);
+            Simulation.saveAllocationResults();
 
         });
     }
