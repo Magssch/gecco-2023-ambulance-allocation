@@ -1,15 +1,10 @@
 package no.ntnu.ambulanceallocation.optimization;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import no.ntnu.ambulanceallocation.simulation.BaseStation;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import no.ntnu.ambulanceallocation.simulation.BaseStation;
 
 public record Allocation(List<List<Integer>> allocation) implements Iterable<List<Integer>> {
 
@@ -65,16 +60,19 @@ public record Allocation(List<List<Integer>> allocation) implements Iterable<Lis
         return allocation.stream();
     }
 
+    private Map<Integer, Long> getAmbulanceStationFrequency(List<Integer> allocation) {
+        return allocation.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+    }
+
     public Map<Integer, Long> getDayAmbulanceStationFrequency() {
-        return getDayShiftAllocation().stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+        return getAmbulanceStationFrequency(getDayShiftAllocation());
     }
 
     public Map<Integer, Long> getNightAmbulanceStationFrequency() {
-        return getNightShiftAllocation().stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+        return getAmbulanceStationFrequency(getNightShiftAllocation());
     }
 
-    private Stream<Integer> getBaseStationAmbulanceProportionStream(
-            Map<Integer, Long> ambulanceStationFrequency) {
+    private Stream<Integer> getBaseStationAmbulanceProportionStream(Map<Integer, Long> ambulanceStationFrequency) {
         return BaseStation.ids().stream()
                 .sorted(Comparator
                         .comparingDouble(baseStation -> (double) ambulanceStationFrequency.getOrDefault(baseStation, 0L)
@@ -82,20 +80,28 @@ public record Allocation(List<List<Integer>> allocation) implements Iterable<Lis
                         .reversed());
     }
 
+    public Stream<Integer> getBaseStationAmbulanceProportionStream(List<Integer> allocation) {
+        return getBaseStationAmbulanceProportionStream(getAmbulanceStationFrequency(allocation));
+    }
+
     public Stream<Integer> getBaseStationDayAmbulanceProportionStream() {
-        return getBaseStationAmbulanceProportionStream(getDayAmbulanceStationFrequency());
+        return getBaseStationAmbulanceProportionStream(getDayShiftAllocation());
     }
 
     public Stream<Integer> getBaseStationNightAmbulanceProportionStream() {
-        return getBaseStationAmbulanceProportionStream(getNightAmbulanceStationFrequency());
+        return getBaseStationAmbulanceProportionStream(getNightShiftAllocation());
+    }
+
+    public List<Integer> getBaseStationAmbulanceProportionList(List<Integer> allocation) {
+        return getBaseStationAmbulanceProportionStream(allocation).toList();
     }
 
     public List<Integer> getBaseStationDayAmbulanceProportionList() {
-        return getBaseStationDayAmbulanceProportionStream().toList();
+        return getBaseStationAmbulanceProportionList(getDayShiftAllocation());
     }
 
     public List<Integer> getBaseStationNightAmbulanceProportionList() {
-        return getBaseStationNightAmbulanceProportionStream().toList();
+        return getBaseStationAmbulanceProportionList(getNightShiftAllocation());
     }
 
     @Override
