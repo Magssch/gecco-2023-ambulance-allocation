@@ -1,18 +1,19 @@
 package no.ntnu.ambulanceallocation.optimization.sls;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.experiments.Result;
 import no.ntnu.ambulanceallocation.optimization.Optimizer;
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class StochasticLocalSearch implements Optimizer {
 
@@ -72,7 +73,6 @@ public class StochasticLocalSearch implements Optimizer {
     @Override
     public void optimize() {
         clearRunStatistics();
-
 
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
@@ -136,6 +136,11 @@ public class StochasticLocalSearch implements Optimizer {
             case HAMMING -> "HSLS";
             case LAZY -> String.format("LazySLS_%d", neighborhoodSize);
         };
+    }
+
+    @Override
+    public Config getConfig() {
+        return config;
     }
 
     private void saveSummary(int tries, int flips) {

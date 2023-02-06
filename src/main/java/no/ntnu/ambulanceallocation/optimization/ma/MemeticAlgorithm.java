@@ -1,5 +1,14 @@
 package no.ntnu.ambulanceallocation.optimization.ma;
 
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.ga.GeneticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.ga.Individual;
@@ -8,14 +17,6 @@ import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Tuple;
 import no.ntnu.ambulanceallocation.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MemeticAlgorithm extends GeneticAlgorithm {
 
@@ -33,13 +34,15 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
     private final NeighborhoodFunction neighborhoodFunction;
     private final int neighborhoodSize;
 
-    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
+    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
+            int neighborhoodSize) {
         this(evolutionStrategy, neighborhoodFunction, neighborhoodSize, Config.defaultConfig());
 
     }
 
-    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction, int neighborhoodSize,
-                            Config config) {
+    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
+            int neighborhoodSize,
+            Config config) {
         super(config);
         this.evolutionStrategy = evolutionStrategy;
         this.neighborhoodFunction = neighborhoodFunction;
@@ -49,7 +52,6 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
     public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction) {
         this(evolutionStrategy, neighborhoodFunction, Parameters.LAZY_NEIGHBOURHOOD_SIZE, Config.defaultConfig());
     }
-
 
     @Override
     public void optimize() {
@@ -132,6 +134,11 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
             case HAMMING -> "HMA";
             case LAZY -> String.format("LazySLS_%d", neighborhoodSize);
         };
+    }
+
+    @Override
+    public Config getConfig() {
+        return config;
     }
 
 }

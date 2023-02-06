@@ -143,6 +143,11 @@ public class GeneticAlgorithm implements Optimizer {
         this.diversity.add(diversity);
     }
 
+    @Override
+    public Config getConfig() {
+        return config;
+    }
+
     protected void clearRunStatistics() {
         bestFitness.clear();
         averageFitness.clear();
