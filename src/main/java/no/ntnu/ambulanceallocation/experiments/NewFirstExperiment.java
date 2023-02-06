@@ -1,5 +1,9 @@
 package no.ntnu.ambulanceallocation.experiments;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,32 +38,33 @@ public class NewFirstExperiment extends Experiment {
     private final Result responseTimes = new Result();
     private final Result runs = new Result();
 
-    public static void main(String[] args) {
-        logger.info("Running experiment 1 ...");
-        NewFirstExperiment firstExperiment = new NewFirstExperiment();
-        firstExperiment.run();
-        logger.info("Done");
+    private final List<Optimizer> optimizers = new ArrayList<>();
 
-        logger.info("Saving results for experiment 1 ...");
-        firstExperiment.saveResults();
-        logger.info("Experiment 1 completed successfully.");
+    public NewFirstExperiment() {
+        StochasticLocalSearch hammingStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.HAMMING);
+        StochasticLocalSearch lazyStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.LAZY);
+        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
+        MemeticAlgorithm lazyBaldwinianMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.BALDWINIAN,
+                NeighborhoodFunction.LAZY);
+        MemeticAlgorithm lazyLamarckianMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                NeighborhoodFunction.LAZY);
+
+        optimizers.add(hammingStochasticLocalSearch);
+        optimizers.add(lazyStochasticLocalSearch);
+        optimizers.add(geneticAlgorithm);
+        optimizers.add(lazyBaldwinianMemeticAlgorithm);
+        optimizers.add(lazyLamarckianMemeticAlgorithm);
     }
 
     @Override
     public void run() {
-        // Setup
+        // Initializer (baselines)
         Random random = new Random();
         AllCityCenter allCityCenter = new AllCityCenter();
         Uniform uniform = new Uniform();
         UniformRandom uniformRandom = new UniformRandom();
         PopulationProportionate populationProportionate = new PopulationProportionate();
 
-        StochasticLocalSearch forwardStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.FORWARD);
-        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
-        MemeticAlgorithm forwardMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
-                NeighborhoodFunction.FORWARD);
-
-        // Initializer (baselines)
         runStochasticInitializer(random);
         runDeterministicInitializer(allCityCenter);
         runDeterministicInitializer(uniform);
@@ -67,12 +72,10 @@ public class NewFirstExperiment extends Experiment {
         runDeterministicInitializer(populationProportionate);
 
         // Optimizers (AI methods)
-        runStochasticOptimizer(forwardStochasticLocalSearch);
-        Simulation.saveAllocationResults();
-        runStochasticOptimizer(geneticAlgorithm);
-        Simulation.saveAllocationResults();
-        runStochasticOptimizer(forwardMemeticAlgorithm);
-        Simulation.saveAllocationResults();
+        for (Optimizer optimizer : optimizers) {
+            runStochasticOptimizer(optimizer);
+            Simulation.saveAllocationResults();
+        }
     }
 
     @Override
@@ -160,6 +163,30 @@ public class NewFirstExperiment extends Experiment {
         allocations.saveColumn(optimizerName + "_d", overallBestAllocation.getDayShiftAllocationSorted());
         allocations.saveColumn(optimizerName + "_n", overallBestAllocation.getNightShiftAllocationSorted());
         overallBestRunStatistics.saveResults(String.format("first_experiment_%s", optimizerName.toLowerCase()));
+    }
+
+    private void getTimeEstimate() {
+        int extraTime = 3;
+        int optimizers = this.optimizers.size();
+        int durationInMinutes = Parameters.RUNS * optimizers * Parameters.MAX_RUNNING_TIME / 60 + extraTime;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        String estimatedTimeOfCompletion = LocalDateTime.now().plus(Duration.of(durationInMinutes, ChronoUnit.MINUTES))
+                .format(formatter);
+        logger.info("Estimated experiment duration: {} minutes.", durationInMinutes);
+        logger.info("You can come back at around: {}.", estimatedTimeOfCompletion);
+        logger.info("Remember to keep the computer plugged in!");
+    }
+
+    public static void main(String[] args) {
+        logger.info("Running experiment 1 ...");
+        NewFirstExperiment firstExperiment = new NewFirstExperiment();
+        firstExperiment.getTimeEstimate();
+        firstExperiment.run();
+        logger.info("Done");
+
+        logger.info("Saving results for experiment 1 ...");
+        firstExperiment.saveResults();
+        logger.info("Experiment 1 completed successfully.");
     }
 
 }
