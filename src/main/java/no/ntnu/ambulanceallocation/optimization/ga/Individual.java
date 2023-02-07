@@ -173,20 +173,17 @@ public class Individual extends Solution {
                 .getBaseStationAmbulanceProportionList(chromosome);
 
         List<Individual> neighborhood = new ArrayList<>();
-        Individual bestNeighbor = this;
 
-        for (int i = 0; i < takeFrom; i++) {
-            int overproportionateStation = baseStationAmbulanceProportionList.get(i);
-            int overproportionateIndex = bestNeighbor.getAllocation().get(chromosomeNumber)
-                    .indexOf(overproportionateStation);
-            for (int baseStationId : BaseStation.ids()) {
-                if (baseStationId == overproportionateStation) {
-                    continue;
-                }
-                neighborhood.add(new Individual(bestNeighbor, chromosomeNumber, overproportionateIndex, baseStationId));
+        int overproportionateStation = baseStationAmbulanceProportionList.get(takeFrom);
+        int overproportionateIndex = chromosome.indexOf(overproportionateStation);
+        for (int baseStationId : BaseStation.ids()) {
+            if (baseStationId == overproportionateStation) {
+                continue;
             }
-            bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
+            neighborhood.add(new Individual(this, chromosomeNumber, overproportionateIndex, baseStationId));
         }
+        Individual bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
+
         return bestNeighbor;
     }
 
@@ -197,24 +194,22 @@ public class Individual extends Solution {
                 .getBaseStationAmbulanceProportionList(chromosome);
 
         List<Individual> neighborhood = new ArrayList<>();
-        Individual bestNeighbor = this;
 
-        for (int i = 0; i < giveTo; i++) {
-            int underproportionateStation = baseStationAmbulanceProportionList.get(BaseStation.size() - 1 - i);
-            for (int baseStationId : BaseStation.ids()) {
-                if (baseStationId == underproportionateStation) {
-                    continue;
-                }
-                int baseStationIndex = bestNeighbor.getAllocation().get(chromosomeNumber).indexOf(baseStationId);
-                if (baseStationIndex == -1) {
-                    continue;
-                }
-                neighborhood
-                        .add(new Individual(bestNeighbor, chromosomeNumber, baseStationIndex,
-                                underproportionateStation));
+        int underproportionateStation = baseStationAmbulanceProportionList.get(BaseStation.size() - 1 - giveTo);
+        for (int baseStationId : BaseStation.ids()) {
+            if (baseStationId == underproportionateStation) {
+                continue;
             }
-            bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
+            int baseStationIndex = chromosome.indexOf(baseStationId);
+            if (baseStationIndex == -1) {
+                continue;
+            }
+            neighborhood
+                    .add(new Individual(this, chromosomeNumber, baseStationIndex,
+                            underproportionateStation));
         }
+        Individual bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
+
         return bestNeighbor;
     }
 
