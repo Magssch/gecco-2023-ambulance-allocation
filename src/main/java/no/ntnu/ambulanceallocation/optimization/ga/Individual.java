@@ -26,7 +26,7 @@ public class Individual extends Solution {
 
     private static final Logger logger = LoggerFactory.getLogger(Individual.class);
 
-    public static final int NUMBER_OF_OPERATORS = 6;
+    public static final int NUMBER_OF_OPERATORS = 3;
     public static final OperatorCritic operatorCritic = new OperatorCritic(NUMBER_OF_OPERATORS);
 
     public Individual(List<List<Integer>> chromosomes) {
@@ -144,13 +144,16 @@ public class Individual extends Solution {
     private Individual improve(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
         int operator = selectImproveOperator();
         Individual individual = switch (operator) {
-            case 0 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, Utils.randomInt(3) + 1,
-                    Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, true);
-            case 1 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, -1, Utils.randomInt(3) + 1, -1, true);
-            case 2 -> robinHoodNeighborhoodSearch(-1, Utils.randomInt(3) + 1, -1, Utils.randomInt(3) + 1, true);
-            case 3 -> robinHoodTakeFirst(Utils.randomInt(2) + 1);
-            case 4 -> robinHoodGiveFirst(Utils.randomInt(2) + 1);
-            case 5 -> {
+            // case 0 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1,
+            // Utils.randomInt(3) + 1,
+            // Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, true);
+            // case 1 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, -1,
+            // Utils.randomInt(3) + 1, -1, true);
+            // case 2 -> robinHoodNeighborhoodSearch(-1, Utils.randomInt(3) + 1, -1,
+            // Utils.randomInt(3) + 1, true);
+            case 0 -> robinHoodTakeFirst(Utils.randomInt(2) + 1);
+            case 1 -> robinHoodGiveFirst(Utils.randomInt(2) + 1);
+            case 2 -> {
                 SlsSolution slsSolution = new SlsSolution(this);
                 SlsSolution bestNeighborhood = slsSolution.greedyStep(neighborhoodFunction, neighborhoodSize);
                 yield new Individual(bestNeighborhood);
@@ -177,9 +180,11 @@ public class Individual extends Solution {
             int overproportionateIndex = bestNeighbor.getAllocation().get(chromosomeNumber)
                     .indexOf(overproportionateStation);
             for (int baseStationId : BaseStation.ids()) {
+                if (baseStationId == overproportionateStation) {
+                    continue;
+                }
                 neighborhood.add(new Individual(bestNeighbor, chromosomeNumber, overproportionateIndex, baseStationId));
             }
-            neighborhood.remove(overproportionateStation);
             bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
         }
         return bestNeighbor;
@@ -197,8 +202,16 @@ public class Individual extends Solution {
         for (int i = 0; i < giveTo; i++) {
             int underproportionateStation = baseStationAmbulanceProportionList.get(BaseStation.size() - 1 - i);
             for (int baseStationId : BaseStation.ids()) {
+                if (baseStationId == underproportionateStation) {
+                    continue;
+                }
+                int baseStationIndex = bestNeighbor.getAllocation().get(chromosomeNumber).indexOf(baseStationId);
+                if (baseStationIndex == -1) {
+                    continue;
+                }
                 neighborhood
-                        .add(new Individual(bestNeighbor, chromosomeNumber, baseStationId, underproportionateStation));
+                        .add(new Individual(bestNeighbor, chromosomeNumber, baseStationIndex,
+                                underproportionateStation));
             }
             bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
         }

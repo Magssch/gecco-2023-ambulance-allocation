@@ -375,54 +375,53 @@ def visualize_first_experiment(include_allocations=False) -> None:
     print("Done.")
 
 
+# def visualize_third_experiment():
+#     def file_path(sub_experiment):
+#         return (
+#             f"{SIMULATION_FOLDER}/third_experiment_response_times_{sub_experiment}.csv"
+#         )
+
+#     print("Visualizing third experiment data...")
+#     sub_experiments = {
+#         "One week": "one_week",
+#         "Two weeks": "two_weeks",
+#         "One month": "one_month",
+#         "Three months": "three_months",
+#         "One year": "one_year",
+#     }
+#     ensure_folder_exists(f"{VISUALIZATION_FOLDER}/third_experiment")
+
+#     strategies = pd.read_csv(file_path(list(sub_experiments.values())[0])).columns
+#     statistics = pd.DataFrame(columns=["timespan", *strategies])
+#     statistics.set_index("timespan", inplace=True)
+
+#     for sub_experiment in sub_experiments:
+#         df = pd.read_csv(file_path(sub_experiments.get(sub_experiment)))
+#         statistics.loc[sub_experiment, df.columns] = df.mean()
+
+#     index_plot(
+#         statistics,
+#         "third_experiment/response_times",
+#         title="Average response times",
+#         xlabel="Timespan",
+#         ylabel="response time / (s)",
+#         y_bottom=800,
+#     )
+#     rank_plot(
+#         statistics.rank(1, ascending=True, method="first"),
+#         "third_experiment/model_rank",
+#     )
+
+#     print("done.")
+
+
 def visualize_third_experiment():
-    def file_path(sub_experiment):
-        return (
-            f"{SIMULATION_FOLDER}/third_experiment_response_times_{sub_experiment}.csv"
-        )
-
-    print("Visualizing third experiment data...")
-    sub_experiments = {
-        "One week": "one_week",
-        "Two weeks": "two_weeks",
-        "One month": "one_month",
-        "Three months": "three_months",
-        "One year": "one_year",
-    }
-    ensure_folder_exists(f"{VISUALIZATION_FOLDER}/third_experiment")
-
-    strategies = pd.read_csv(file_path(list(sub_experiments.values())[0])).columns
-    statistics = pd.DataFrame(columns=["timespan", *strategies])
-    statistics.set_index("timespan", inplace=True)
-
-    for sub_experiment in sub_experiments:
-        df = pd.read_csv(file_path(sub_experiments.get(sub_experiment)))
-        statistics.loc[sub_experiment, df.columns] = df.mean()
-
-    index_plot(
-        statistics,
-        "third_experiment/response_times",
-        title="Average response times",
-        xlabel="Timespan",
-        ylabel="response time / (s)",
-        y_bottom=800,
-    )
-    rank_plot(
-        statistics.rank(1, ascending=True, method="first"),
-        "third_experiment/model_rank",
-    )
-
-    print("done.")
-
-
-def visualize_fourth_experiment():
     print("Visualizing fourth experiment data...")
 
     ensure_folder_exists(f"{VISUALIZATION_FOLDER}/fourth_experiment")
     file = f"{SIMULATION_FOLDER}/new_third_experiment_best_fitness.csv"
     df = pd.read_csv(file)
     df.set_index("ratio", inplace=True)
-    print(df)
     index_plot(
         df,
         "fourth_experiment/average_response_times_ratio_log",

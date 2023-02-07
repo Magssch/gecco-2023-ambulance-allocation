@@ -5,10 +5,9 @@ from common import (SIMULATION_FOLDER, VISUALIZATION_FOLDER,
                     ensure_folder_exists)
 from save_statistics import save_aggregated_allocations, save_statistics
 from visualize import (allocation_plot, plot_box_plot, regular_plot,
-                       sorted_plot, visualize_fourth_experiment,
-                       visualize_ga_run,
+                       sorted_plot, visualize_ga_run,
                        visualize_geographic_response_time_distribution,
-                       visualize_sls_run)
+                       visualize_sls_run, visualize_third_experiment)
 
 
 def split_result_name(result_name: str) -> tuple[str, str]:
@@ -81,7 +80,7 @@ def visualize_results(experiment_files: list[str], include_allocations=False) ->
 def main():
     experiment_files = collect_experiment_files()
     visualize_results(experiment_files, include_allocations=False)
-    visualize_fourth_experiment()
+    visualize_third_experiment()
 
 
 if __name__ == '__main__':
