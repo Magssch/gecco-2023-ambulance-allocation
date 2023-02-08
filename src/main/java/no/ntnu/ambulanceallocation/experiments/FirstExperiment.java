@@ -23,6 +23,7 @@ import no.ntnu.ambulanceallocation.optimization.initializer.Random;
 import no.ntnu.ambulanceallocation.optimization.initializer.Uniform;
 import no.ntnu.ambulanceallocation.optimization.initializer.UniformRandom;
 import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
+import no.ntnu.ambulanceallocation.optimization.ma.ImproveOperator;
 import no.ntnu.ambulanceallocation.optimization.ma.MemeticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
 import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
@@ -44,11 +45,13 @@ public class FirstExperiment extends Experiment {
         StochasticLocalSearch hammingStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.HAMMING);
         StochasticLocalSearch lazyStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.LAZY);
         GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
-        MemeticAlgorithm memeticAlgorithmSLS = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+        MemeticAlgorithm memeticAlgorithmSLS = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, ImproveOperator.SLS,
                 NeighborhoodFunction.LAZY);
         MemeticAlgorithm memeticAlgorithmRobinHood = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                ImproveOperator.ROBINHOOD,
                 NeighborhoodFunction.LAZY);
         MemeticAlgorithm memeticAlgorithmOperatorCritic = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                ImproveOperator.OPERATORCRITIC,
                 NeighborhoodFunction.LAZY);
 
         optimizers.add(hammingStochasticLocalSearch);

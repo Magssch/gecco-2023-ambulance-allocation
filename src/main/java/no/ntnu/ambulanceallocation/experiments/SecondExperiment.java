@@ -20,9 +20,11 @@ import no.ntnu.ambulanceallocation.optimization.ga.GeneticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
 import no.ntnu.ambulanceallocation.optimization.initializer.PopulationProportionate;
 import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
+import no.ntnu.ambulanceallocation.optimization.ma.ImproveOperator;
 import no.ntnu.ambulanceallocation.optimization.ma.MemeticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
 import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
+import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
 import no.ntnu.ambulanceallocation.utils.Tuple;
@@ -38,33 +40,30 @@ public class SecondExperiment extends Experiment {
     private final Map<String, Tuple<LocalDateTime>> simulations = Collections.synchronizedMap(Map.of(
             "quiet", // Week 2
             new Tuple<>(LocalDateTime.of(2018, 6, 9, 0, 0, 0), LocalDateTime.of(2018, 6, 16, 0, 0, 0)),
-            "average", // Week 28
-            new Tuple<>(LocalDateTime.of(2018, 1, 8, 0, 0, 0), LocalDateTime.of(2018, 1, 15, 0, 0, 0)),
+            // "average", // Week 28
+            // new Tuple<>(LocalDateTime.of(2018, 1, 8, 0, 0, 0), LocalDateTime.of(2018, 1,
+            // 15, 0, 0, 0)),
             "busy", // Week 52
             new Tuple<>(LocalDateTime.of(2018, 12, 24, 0, 0, 0), LocalDateTime.of(2018, 12, 31, 0, 0, 0))));
 
-    private final List<Optimizer> optimizers = new ArrayList<>();
+    private List<Optimizer> produceOptimizerList(Tuple<LocalDateTime> timeInterval) {
+        List<Optimizer> optimizers = new ArrayList<>();
+        StochasticLocalSearch lazyStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.LAZY,
+                Config.withinPeriod(timeInterval.first(), timeInterval.second()));
+        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(
+                Config.withinPeriod(timeInterval.first(), timeInterval.second()));
+        MemeticAlgorithm memeticAlgorithmOperatorCritic = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                ImproveOperator.OPERATORCRITIC,
+                NeighborhoodFunction.LAZY, Config.withinPeriod(timeInterval.first(), timeInterval.second()));
 
-    public SecondExperiment() {
-        StochasticLocalSearch hammingStochasticLocalSearch = new StochasticLocalSearch(
-                NeighborhoodFunction.HAMMING);
-        StochasticLocalSearch lazyStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.LAZY);
-        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
-        MemeticAlgorithm lazyBaldwinianMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.BALDWINIAN,
-                NeighborhoodFunction.LAZY);
-        MemeticAlgorithm lazyLamarckianMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
-                NeighborhoodFunction.LAZY);
-
-        optimizers.add(hammingStochasticLocalSearch);
         optimizers.add(lazyStochasticLocalSearch);
         optimizers.add(geneticAlgorithm);
-        optimizers.add(lazyBaldwinianMemeticAlgorithm);
-        optimizers.add(lazyLamarckianMemeticAlgorithm);
+        optimizers.add(memeticAlgorithmOperatorCritic);
+        return optimizers;
     }
 
     @Override
     public void run() {
-
         simulations
                 .keySet()
                 .parallelStream()
@@ -75,9 +74,9 @@ public class SecondExperiment extends Experiment {
                     runs = new Result();
 
                     PopulationProportionate populationProportionate = new PopulationProportionate();
-                    runDeterministicInitializer(populationProportionate);
+                    runDeterministicInitializer(populationProportionate, simulations.get(simulationPeriod));
 
-                    for (Optimizer optimizer : optimizers) {
+                    for (Optimizer optimizer : produceOptimizerList(simulations.get(simulationPeriod))) {
                         runStochasticOptimizer(optimizer, simulationPeriod); // TODO: run with correct config
                         Simulation.saveAllocationResults();
                     }
@@ -95,12 +94,13 @@ public class SecondExperiment extends Experiment {
 
     }
 
-    private void runDeterministicInitializer(Initializer initializer) {
+    private void runDeterministicInitializer(Initializer initializer, Tuple<LocalDateTime> timeInterval) {
         String name = initializer.getClass().getSimpleName();
 
         List<Integer> dayShiftAllocation = initializer.initialize(Parameters.NUMBER_OF_AMBULANCES_DAY);
         List<Integer> nightShiftAllocation = initializer.initialize(Parameters.NUMBER_OF_AMBULANCES_NIGHT);
-        ResponseTimes responseTimes = Simulation.simulate(dayShiftAllocation, nightShiftAllocation);
+        ResponseTimes responseTimes = Simulation.withinPeriod(timeInterval.first(), timeInterval.second())
+                .simulate(new Allocation(List.of(dayShiftAllocation, nightShiftAllocation)));
 
         runs.saveColumn(name, Collections.nCopies(Parameters.RUNS, responseTimes.average()));
     }
@@ -136,7 +136,7 @@ public class SecondExperiment extends Experiment {
 
     private void getTimeEstimate() {
         int extraTime = 3;
-        int optimizers = this.optimizers.size();
+        int optimizers = 3;
         int durationInMinutes = Parameters.RUNS * optimizers * Parameters.MAX_RUNNING_TIME / 60 + extraTime;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         String estimatedTimeOfCompletion = LocalDateTime.now().plus(Duration.of(durationInMinutes, ChronoUnit.MINUTES))

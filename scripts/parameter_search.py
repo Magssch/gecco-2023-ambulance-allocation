@@ -6,7 +6,7 @@ import pandas as pd
 
 # Define the parameters for the grid search
 
-optimizer = "ma"
+optimizer = "ma_operatorcritic"
 
 meta_parameters = {
     "number_of_runs": 1,
@@ -23,7 +23,6 @@ param_grid = {
     "mutation_probability": [0.05,0.1,0.15],
     "improve_probability": [0.05,0.1,0.15,0.2] if optimizer == "ma" else [0.0],
     "use_swap_mutation": ["true"],
-    "improve_operator": ["operatorcritic", "sls", "robinhood"] if optimizer == "ma" else [""],
     "restart_probability": [0.025],
     "noise_probability": [0.65],
     "lazy_neighborhood_size": [80],
@@ -68,10 +67,9 @@ results = {
     "mutation_probability": [params[5] for params in parameter_permutations_list],
     "improve_probability": [params[6] for params in parameter_permutations_list],
     "use_swap_mutation": [params[7] for params in parameter_permutations_list],
-    "improve_operator": [params[8] for params in parameter_permutations_list],
-    "restart_probability": [params[9] for params in parameter_permutations_list],
-    "noise_probability": [params[10] for params in parameter_permutations_list],
-    "lazy_neighborhood_size": [params[11] for params in parameter_permutations_list],
+    "restart_probability": [params[8] for params in parameter_permutations_list],
+    "noise_probability": [params[9] for params in parameter_permutations_list],
+    "lazy_neighborhood_size": [params[10] for params in parameter_permutations_list],
     "fitness": fitness.split(","),
 }
 # Print the final dataframe

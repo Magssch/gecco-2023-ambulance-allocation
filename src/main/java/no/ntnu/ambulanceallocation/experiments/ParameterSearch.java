@@ -26,7 +26,12 @@ public class ParameterSearch extends Experiment {
     public ParameterSearch() {
         optimizer = switch (parameters.get("-optimizer")) {
             case "ga" -> new GeneticAlgorithm();
-            case "ma" -> new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.FORWARD);
+            case "ma_operatorcritic" -> new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                    ImproveOperator.OPERATORCRITIC, NeighborhoodFunction.FORWARD);
+            case "ma_sls" ->
+                new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, ImproveOperator.SLS, NeighborhoodFunction.FORWARD);
+            case "ma_robinhood" -> new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, ImproveOperator.ROBINHOOD,
+                    NeighborhoodFunction.FORWARD);
             case "sls" -> new StochasticLocalSearch(NeighborhoodFunction.LAZY);
             default -> throw new IllegalArgumentException("Unexpected value: " + parameters.get("optimizer"));
         };
@@ -49,13 +54,10 @@ public class ParameterSearch extends Experiment {
 
             Parameters.IMPROVE_PROBABILITY = Double.parseDouble(params[6]);
             Parameters.USE_SWAP_MUTATION = Boolean.parseBoolean(params[7]);
-            Parameters.IMPROVE_OPERATOR = params[8].equals("operatorcritic") ? ImproveOperator.OPERATORCRITIC : null;
-            Parameters.IMPROVE_OPERATOR = params[8].equals("robinhood") ? ImproveOperator.ROBINHOOD : null;
-            Parameters.IMPROVE_OPERATOR = params[8].equals("sls") ? ImproveOperator.SLS : null;
 
-            Parameters.RESTART_PROBABILITY = Double.parseDouble(params[9]);
-            Parameters.NOISE_PROBABILITY = Double.parseDouble(params[10]);
-            Parameters.LAZY_NEIGHBOURHOOD_SIZE = Integer.parseInt(params[11]);
+            Parameters.RESTART_PROBABILITY = Double.parseDouble(params[8]);
+            Parameters.NOISE_PROBABILITY = Double.parseDouble(params[9]);
+            Parameters.LAZY_NEIGHBOURHOOD_SIZE = Integer.parseInt(params[10]);
 
             System.err.println("Running with parameters: " + parameterConfig);
 

@@ -11,6 +11,7 @@ import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
 import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
+import no.ntnu.ambulanceallocation.optimization.ma.ImproveOperator;
 import no.ntnu.ambulanceallocation.optimization.ma.OperatorCritic;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
 import no.ntnu.ambulanceallocation.optimization.sls.SlsSolution;
@@ -105,7 +106,10 @@ public class Individual extends Solution {
     }
 
     // Memetic method
-    public void improve(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
+    public void improve(
+            EvolutionStrategy evolutionStrategy,
+            ImproveOperator improveOperator,
+            NeighborhoodFunction neighborhoodFunction,
             int neighborhoodSize,
             double improveProbability) {
         if (Utils.randomDouble() < improveProbability) {
@@ -114,13 +118,13 @@ public class Individual extends Solution {
                 case DARWINIAN -> {
                 }
                 case BALDWINIAN -> {
-                    Individual bestNeighbor = improve(neighborhoodFunction, neighborhoodSize);
+                    Individual bestNeighbor = improve(neighborhoodFunction, improveOperator, neighborhoodSize);
                     if (bestNeighbor.getFitness() <= getFitness()) {
                         this.setFitness(bestNeighbor.getFitness());
                     }
                 }
                 case LAMARCKIAN -> {
-                    Individual bestNeighbor = improve(neighborhoodFunction, neighborhoodSize);
+                    Individual bestNeighbor = improve(neighborhoodFunction, improveOperator, neighborhoodSize);
                     if (bestNeighbor.getFitness() <= getFitness()) {
                         copy(bestNeighbor);
                     }
@@ -133,8 +137,9 @@ public class Individual extends Solution {
         return operatorCritic.selectNext();
     }
 
-    private Individual improve(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
-        return switch (Parameters.IMPROVE_OPERATOR) {
+    private Individual improve(NeighborhoodFunction neighborhoodFunction, ImproveOperator improveOperator,
+            int neighborhoodSize) {
+        return switch (improveOperator) {
             case OPERATORCRITIC -> improveWithCritic(neighborhoodFunction, neighborhoodSize);
             case SLS -> improveWithSLS(neighborhoodFunction, neighborhoodSize);
             case ROBINHOOD -> improveWithRobinHood();

@@ -32,25 +32,31 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
 
     private final EvolutionStrategy evolutionStrategy;
     private final NeighborhoodFunction neighborhoodFunction;
+    private final ImproveOperator improveOperator;
     private final int neighborhoodSize;
 
-    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
-            int neighborhoodSize) {
-        this(evolutionStrategy, neighborhoodFunction, neighborhoodSize, Config.defaultConfig());
+    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, ImproveOperator improveOperator,
+            NeighborhoodFunction neighborhoodFunction,
+            Config config) {
+        this(evolutionStrategy, improveOperator, neighborhoodFunction, Parameters.LAZY_NEIGHBOURHOOD_SIZE, config);
 
     }
 
-    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
+    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, ImproveOperator improveOperator,
+            NeighborhoodFunction neighborhoodFunction,
             int neighborhoodSize,
             Config config) {
         super(config);
         this.evolutionStrategy = evolutionStrategy;
         this.neighborhoodFunction = neighborhoodFunction;
         this.neighborhoodSize = neighborhoodSize;
+        this.improveOperator = improveOperator;
     }
 
-    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction) {
-        this(evolutionStrategy, neighborhoodFunction, Parameters.LAZY_NEIGHBOURHOOD_SIZE, Config.defaultConfig());
+    public MemeticAlgorithm(EvolutionStrategy evolutionStrategy, ImproveOperator improveOperator,
+            NeighborhoodFunction neighborhoodFunction) {
+        this(evolutionStrategy, improveOperator, neighborhoodFunction, Parameters.LAZY_NEIGHBOURHOOD_SIZE,
+                Config.defaultConfig());
     }
 
     @Override
@@ -89,9 +95,9 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
                         offspringB.mutate(Parameters.MUTATION_PROBABILITY);
 
                         // MA step
-                        offspringA.improve(evolutionStrategy, neighborhoodFunction, neighborhoodSize,
+                        offspringA.improve(evolutionStrategy, improveOperator, neighborhoodFunction, neighborhoodSize,
                                 Parameters.IMPROVE_PROBABILITY);
-                        offspringB.improve(evolutionStrategy, neighborhoodFunction, neighborhoodSize,
+                        offspringB.improve(evolutionStrategy, improveOperator, neighborhoodFunction, neighborhoodSize,
                                 Parameters.IMPROVE_PROBABILITY);
 
                         synchronized (nextPopulation) {
