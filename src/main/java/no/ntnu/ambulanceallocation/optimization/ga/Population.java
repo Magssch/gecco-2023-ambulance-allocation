@@ -1,6 +1,14 @@
 package no.ntnu.ambulanceallocation.optimization.ga;
 
-import no.ntnu.ambulanceallocation.Parameters;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
 import no.ntnu.ambulanceallocation.optimization.initializer.PopulationProportionate;
@@ -9,22 +17,17 @@ import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Tuple;
 import no.ntnu.ambulanceallocation.utils.Utils;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
-
 public class Population implements Iterable<Individual> {
 
     private final List<Individual> population;
 
-    public Population(int populationSize, Initializer initializer, Config config) {
+    public Population(int populationSize, int seedingSize, Initializer initializer, Config config) {
         population = new ArrayList<>();
-        for (int i = 0; i < populationSize - Parameters.POPULATION_PROPORTIONATE_SEEDING_SIZE; i++) {
+        for (int i = 0; i < populationSize - seedingSize; i++) {
             population.add(new Individual(initializer, config));
         }
         // Seed with close to optimal PopulationProportionate initializer strategy
-        for (int i = 0; i < Parameters.POPULATION_PROPORTIONATE_SEEDING_SIZE; i++) {
+        for (int i = 0; i < seedingSize; i++) {
             population.add(new Individual(new PopulationProportionate(), config));
         }
     }

@@ -48,7 +48,7 @@ public class GeneticAlgorithm implements Optimizer {
     @Override
     public void optimize() {
         clearRunStatistics();
-        population = new Population(Parameters.POPULATION_SIZE, Parameters.INITIALIZER, config);
+        population = new Population(Parameters.POPULATION_SIZE, 0, Parameters.INITIALIZER, config);
 
         Runnable optimizationWrapper = () -> {
             logger.info("Starting GA optimizer...");

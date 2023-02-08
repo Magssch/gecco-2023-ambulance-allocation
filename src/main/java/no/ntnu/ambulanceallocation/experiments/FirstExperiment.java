@@ -44,16 +44,19 @@ public class FirstExperiment extends Experiment {
         StochasticLocalSearch hammingStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.HAMMING);
         StochasticLocalSearch lazyStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.LAZY);
         GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
-        MemeticAlgorithm lazyBaldwinianMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.BALDWINIAN,
+        MemeticAlgorithm memeticAlgorithmSLS = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
                 NeighborhoodFunction.LAZY);
-        MemeticAlgorithm lazyLamarckianMemeticAlgorithm = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+        MemeticAlgorithm memeticAlgorithmRobinHood = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                NeighborhoodFunction.LAZY);
+        MemeticAlgorithm memeticAlgorithmOperatorCritic = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
                 NeighborhoodFunction.LAZY);
 
         optimizers.add(hammingStochasticLocalSearch);
         optimizers.add(lazyStochasticLocalSearch);
         optimizers.add(geneticAlgorithm);
-        optimizers.add(lazyBaldwinianMemeticAlgorithm);
-        optimizers.add(lazyLamarckianMemeticAlgorithm);
+        optimizers.add(memeticAlgorithmSLS);
+        optimizers.add(memeticAlgorithmRobinHood);
+        optimizers.add(memeticAlgorithmOperatorCritic);
     }
 
     @Override

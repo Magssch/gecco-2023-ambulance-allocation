@@ -56,7 +56,8 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
     @Override
     public void optimize() {
         clearRunStatistics();
-        population = new Population(Parameters.POPULATION_SIZE, Parameters.INITIALIZER, config);
+        population = new Population(Parameters.POPULATION_SIZE, Parameters.POPULATION_PROPORTIONATE_SEEDING_SIZE,
+                Parameters.INITIALIZER, config);
 
         Runnable optimizationWrapper = () -> {
             logger.info("Starting {} optimizer...", getAbbreviation());
