@@ -31,8 +31,6 @@ public class ThirdExperiment extends Experiment {
     private final Result runs = new Result();
     private static final PopulationProportionate populationProportionate = new PopulationProportionate();
 
-    private Allocation overallBestAllocation = new Allocation();
-
     private final List<Double> ratioList = List.of(
             // 0.1,
             // 0.15,
@@ -62,9 +60,9 @@ public class ThirdExperiment extends Experiment {
                 .collect(Collectors.toList()));
 
         runs.saveColumn("run",
-                IntStream.range(1, Parameters.RUNS + 1).boxed().map(elt -> Collections.nCopies(ratioList.size(), elt))
-                        .flatMap(List::stream)
-                        .collect(Collectors.toList()));
+                Collections.nCopies(ratioList.size(),
+                        List.of(IntStream.rangeClosed(1, Parameters.RUNS + 1)
+                                .boxed().collect(Collectors.toList()))));
 
         logger.info("Testing model 'Population Proportionate'");
         runPopulationProportionate();

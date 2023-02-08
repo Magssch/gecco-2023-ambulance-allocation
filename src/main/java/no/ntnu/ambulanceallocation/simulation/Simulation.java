@@ -59,6 +59,10 @@ public final class Simulation {
     }
 
     public static void saveAllocationResults() {
+        saveAllocationResults("");
+    }
+
+    public static void saveAllocationResults(String suffix) {
         Map<Integer, String> baseStationMap = BaseStation.ids().stream()
                 .collect(Collectors.toMap(Function.identity(), v -> "0"));
 
@@ -93,7 +97,7 @@ public final class Simulation {
                 }).toList());
         simulationsResult.saveColumn("Response time", responseTimeResults);
         simulationsResult
-                .saveResults("allocation_response_times/%s".formatted(LocalDateTime.now()));
+                .saveResults("allocation_response_times/%s_%s".formatted(LocalDateTime.now(), suffix));
     }
 
     public Simulation(final Config config) {

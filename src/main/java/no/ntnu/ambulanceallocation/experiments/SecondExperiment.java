@@ -77,7 +77,11 @@ public class SecondExperiment extends Experiment {
             for (Optimizer optimizer : optimizers) {
                 System.out.println(optimizers);
                 runStochasticOptimizer(optimizer, simulationPeriod);
-                Simulation.saveAllocationResults();
+                Simulation
+                        .saveAllocationResults("from_" + simulations.get(simulationPeriod).first().getMonth().toString()
+                                + "_" + simulations.get(simulationPeriod).first().getDayOfMonth() + "_to_"
+                                + simulations.get(simulationPeriod).second().getMonth().toString() + "_"
+                                + simulations.get(simulationPeriod).second().getDayOfMonth());
             }
 
             saveResults(simulationPeriod);
