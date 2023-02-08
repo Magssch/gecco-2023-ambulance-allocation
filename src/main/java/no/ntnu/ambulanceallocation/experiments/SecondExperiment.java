@@ -33,21 +33,24 @@ public class SecondExperiment extends Experiment {
 
     private static final Logger logger = LoggerFactory.getLogger(SecondExperiment.class);
 
-    private Result allocations = new Result();
-    private Result responseTimes = new Result();
-    private Result runs = new Result();
-
-    private final Map<String, Tuple<LocalDateTime>> simulations = Collections.synchronizedMap(Map.of(
+    private final Map<String, Tuple<LocalDateTime>> simulations = Map.of(
             "quiet", // Week 2
             new Tuple<>(LocalDateTime.of(2018, 6, 9, 0, 0, 0), LocalDateTime.of(2018, 6, 16, 0, 0, 0)),
             // "average", // Week 28
             // new Tuple<>(LocalDateTime.of(2018, 1, 8, 0, 0, 0), LocalDateTime.of(2018, 1,
             // 15, 0, 0, 0)),
             "busy", // Week 52
-            new Tuple<>(LocalDateTime.of(2018, 12, 24, 0, 0, 0), LocalDateTime.of(2018, 12, 31, 0, 0, 0))));
+            new Tuple<>(LocalDateTime.of(2018, 12, 24, 0, 0, 0), LocalDateTime.of(2018, 12, 31, 0, 0, 0)));
+
+    private final Map<String, Result> runResults = Map.of(
+            "quiet", // Week 2
+            new Result(),
+            "busy", // Week 52
+            new Result());
 
     private List<Optimizer> produceOptimizerList(Tuple<LocalDateTime> timeInterval) {
         List<Optimizer> optimizers = new ArrayList<>();
+
         StochasticLocalSearch lazyStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.LAZY,
                 Config.withinPeriod(timeInterval.first(), timeInterval.second()));
         GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(
@@ -66,15 +69,14 @@ public class SecondExperiment extends Experiment {
     public void run() {
         for (String simulationPeriod : simulations.keySet()) {
             logger.info("Running {} simulations...", simulationPeriod);
-            allocations = new Result();
-            responseTimes = new Result();
-            runs = new Result();
 
             PopulationProportionate populationProportionate = new PopulationProportionate();
-            runDeterministicInitializer(populationProportionate, simulations.get(simulationPeriod));
+            runDeterministicInitializer(populationProportionate, simulationPeriod);
+            List<Optimizer> optimizers = produceOptimizerList(simulations.get(simulationPeriod));
 
-            for (Optimizer optimizer : produceOptimizerList(simulations.get(simulationPeriod))) {
-                runStochasticOptimizer(optimizer, simulationPeriod, simulations.get(simulationPeriod));
+            for (Optimizer optimizer : optimizers) {
+                System.out.println(optimizers);
+                runStochasticOptimizer(optimizer, simulationPeriod);
                 Simulation.saveAllocationResults();
             }
 
@@ -83,7 +85,7 @@ public class SecondExperiment extends Experiment {
     }
 
     public void saveResults(String simulationPeriod) {
-        runs.saveResults(String.format("second_experiment_%s_runs", simulationPeriod));
+        runResults.get(simulationPeriod).saveResults(String.format("second_experiment_%s_runs", simulationPeriod));
     }
 
     @Override
@@ -91,22 +93,22 @@ public class SecondExperiment extends Experiment {
 
     }
 
-    private void runDeterministicInitializer(Initializer initializer, Tuple<LocalDateTime> timeInterval) {
+    private void runDeterministicInitializer(Initializer initializer, String simulationPeriod) {
         String name = initializer.getClass().getSimpleName();
-
+        Tuple<LocalDateTime> timeInterval = simulations.get(simulationPeriod);
         List<Integer> dayShiftAllocation = initializer.initialize(Parameters.NUMBER_OF_AMBULANCES_DAY);
         List<Integer> nightShiftAllocation = initializer.initialize(Parameters.NUMBER_OF_AMBULANCES_NIGHT);
+
         ResponseTimes responseTimes = Simulation.withinPeriod(timeInterval.first(), timeInterval.second())
                 .simulate(new Allocation(List.of(dayShiftAllocation, nightShiftAllocation)));
 
-        runs.saveColumn(name, Collections.nCopies(Parameters.RUNS, responseTimes.average()));
+        runResults.get(simulationPeriod).saveColumn(name,
+                Collections.nCopies(Parameters.RUNS, responseTimes.average()));
     }
 
-    private void runStochasticOptimizer(Optimizer optimizer, String simulationPeriod,
-            Tuple<LocalDateTime> timeInterval) {
+    private void runStochasticOptimizer(Optimizer optimizer, String simulationPeriod) {
         String optimizerName = optimizer.getAbbreviation();
         double overallBestFitness = Double.POSITIVE_INFINITY;
-        Allocation overallBestAllocation = new Allocation();
         Result overallBestRunStatistics = new Result();
 
         List<Double> bestFitnessAtTermination = new ArrayList<>();
@@ -119,16 +121,13 @@ public class SecondExperiment extends Experiment {
             bestFitnessAtTermination.add(solution.getFitness());
 
             if (solution.getFitness() < overallBestFitness) {
-                overallBestAllocation = solution.getAllocation();
                 overallBestRunStatistics = optimizer.getRunStatistics();
             }
 
             logger.info("{} run {}/{} completed.", optimizerName, i + 1, Parameters.RUNS);
         }
 
-        ResponseTimes overallBestResponseTimes = Simulation.withinPeriod(timeInterval.first(), timeInterval.second())
-                .simulate(overallBestAllocation);
-        runs.saveColumn(optimizerName, bestFitnessAtTermination);
+        runResults.get(simulationPeriod).saveColumn(optimizerName, bestFitnessAtTermination);
         overallBestRunStatistics
                 .saveResults(String.format("second_experiment_%s_%s", simulationPeriod, optimizerName.toLowerCase()));
     }

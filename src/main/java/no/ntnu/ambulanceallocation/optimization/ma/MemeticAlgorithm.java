@@ -136,10 +136,15 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
         if (instanceCount.get() == 1) {
             return "MA";
         }
-        return switch (neighborhoodFunction) {
-            case FORWARD -> "FMA";
-            case HAMMING -> "HMA";
-            case LAZY -> String.format("LazySLS_%d", neighborhoodSize);
+
+        return switch (improveOperator) {
+            case ROBINHOOD -> "FRB";
+            case SLS -> switch (neighborhoodFunction) {
+                case FORWARD -> "FMA";
+                case HAMMING -> "HMA";
+                case LAZY -> String.format("MA_LazySLS_%d", neighborhoodSize);
+            };
+            case OPERATORCRITIC -> "OCMA";
         };
     }
 
