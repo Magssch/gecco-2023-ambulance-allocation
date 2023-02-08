@@ -64,29 +64,22 @@ public class SecondExperiment extends Experiment {
 
     @Override
     public void run() {
-        simulations
-                .keySet()
-                .parallelStream()
-                .forEach(simulationPeriod -> {
-                    logger.info("Running {} simulations...", simulationPeriod);
-                    allocations = new Result();
-                    responseTimes = new Result();
-                    runs = new Result();
+        for (String simulationPeriod : simulations.keySet()) {
+            logger.info("Running {} simulations...", simulationPeriod);
+            allocations = new Result();
+            responseTimes = new Result();
+            runs = new Result();
 
-                    PopulationProportionate populationProportionate = new PopulationProportionate();
-                    runDeterministicInitializer(populationProportionate, simulations.get(simulationPeriod));
+            PopulationProportionate populationProportionate = new PopulationProportionate();
+            runDeterministicInitializer(populationProportionate, simulations.get(simulationPeriod));
 
-                    for (Optimizer optimizer : produceOptimizerList(simulations.get(simulationPeriod))) {
-                        runStochasticOptimizer(optimizer, simulationPeriod, simulations.get(simulationPeriod)); // TODO:
-                                                                                                                // run
-                                                                                                                // with
-                                                                                                                // correct
-                                                                                                                // config
-                        Simulation.saveAllocationResults();
-                    }
+            for (Optimizer optimizer : produceOptimizerList(simulations.get(simulationPeriod))) {
+                runStochasticOptimizer(optimizer, simulationPeriod, simulations.get(simulationPeriod));
+                Simulation.saveAllocationResults();
+            }
 
-                    saveResults(simulationPeriod);
-                });
+            saveResults(simulationPeriod);
+        }
     }
 
     public void saveResults(String simulationPeriod) {
