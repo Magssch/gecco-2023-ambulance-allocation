@@ -31,7 +31,6 @@ public class StochasticLocalSearch implements Optimizer {
 
     private final NeighborhoodFunction neighborhoodFunction;
     private final int neighborhoodSize;
-    private float dynamicNeighborhoodSize;
 
     private final Config config;
 
@@ -41,7 +40,6 @@ public class StochasticLocalSearch implements Optimizer {
     public StochasticLocalSearch(NeighborhoodFunction neighborhoodFunction) {
         this.neighborhoodFunction = neighborhoodFunction;
         neighborhoodSize = Parameters.LAZY_NEIGHBOURHOOD_SIZE;
-        dynamicNeighborhoodSize = this.neighborhoodSize;
         config = Config.defaultConfig();
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
@@ -50,7 +48,6 @@ public class StochasticLocalSearch implements Optimizer {
     public StochasticLocalSearch(NeighborhoodFunction neighborhoodFunction, Config config) {
         this.neighborhoodFunction = neighborhoodFunction;
         neighborhoodSize = Parameters.LAZY_NEIGHBOURHOOD_SIZE;
-        dynamicNeighborhoodSize = this.neighborhoodSize;
         this.config = config;
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
@@ -59,7 +56,6 @@ public class StochasticLocalSearch implements Optimizer {
     public StochasticLocalSearch(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
         this.neighborhoodFunction = neighborhoodFunction;
         this.neighborhoodSize = neighborhoodSize;
-        dynamicNeighborhoodSize = neighborhoodSize;
         this.config = Config.defaultConfig();
         bestSolution = new SlsSolution(config);
         solution = new SlsSolution(config);
@@ -82,7 +78,6 @@ public class StochasticLocalSearch implements Optimizer {
             logger.info("Starting {} optimizer...", getAbbreviation());
             int tries = 0;
             int flips = 0;
-            dynamicNeighborhoodSize = neighborhoodSize;
             long startTime = System.nanoTime();
 
             logger.info("{} tries: {}", getAbbreviation(), tries);

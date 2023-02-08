@@ -1,15 +1,12 @@
 import argparse
 import functools
 import shutil
-import warnings
 from statistics import mode
 from time import time
 
 import pandas as pd
-from pandas.core.common import SettingWithCopyWarning
-from plots.funnel import plot_funnel
 
-warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
+from plots.funnel import plot_funnel
 
 
 def print_step(func):
@@ -18,7 +15,7 @@ def print_step(func):
         t1 = time()
         return_value = func(*args)
         t2 = time()
-        print(f"- Completed in {(t2-t1):.4f}s")
+        print(f"- Completed in {(t2 - t1):.4f}s")
         print(f"- Input size was {args[0].shape[0]}")
         print(f"- Output size was {return_value.shape[0]}")
         funnel_statistics.append((func.__name__, args[0].shape[0]))
@@ -148,13 +145,13 @@ def filter_response_time_outliers(df):
         df[
             ((df.ank_hentested - df.index) > pd.Timedelta(hours=6))
             & (~df.hastegrad.isin(["V1", "V", "V2"]))
-        ].index
+            ].index
     )
     df = df.drop(
         df[
             ((df.rykker_ut - df.index) > pd.Timedelta(hours=6))
             & (~df.hastegrad.isin(["V1", "V", "V2"]))
-        ].index
+            ].index
     )
     return df
 

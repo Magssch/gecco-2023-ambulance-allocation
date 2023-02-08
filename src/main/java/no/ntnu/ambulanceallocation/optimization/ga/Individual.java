@@ -1,15 +1,5 @@
 package no.ntnu.ambulanceallocation.optimization.ga;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
@@ -22,9 +12,14 @@ import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Tuple;
 import no.ntnu.ambulanceallocation.utils.Utils;
 
-public class Individual extends Solution {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-    private static final Logger logger = LoggerFactory.getLogger(Individual.class);
+public class Individual extends Solution {
 
     public static final int NUMBER_OF_OPERATORS = 3;
     public static final OperatorCritic operatorCritic = new OperatorCritic(NUMBER_OF_OPERATORS);
@@ -111,8 +106,8 @@ public class Individual extends Solution {
 
     // Memetic method
     public void improve(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
-            int neighborhoodSize,
-            double improveProbability) {
+                        int neighborhoodSize,
+                        double improveProbability) {
         if (Utils.randomDouble() < improveProbability) {
             // find the best individual in population
             switch (evolutionStrategy) {
@@ -159,7 +154,7 @@ public class Individual extends Solution {
                 yield new Individual(bestNeighborhood);
             }
             default ->
-                throw new IllegalStateException(String.format("Operator %d not present. Illegal value.", operator));
+                    throw new IllegalStateException(String.format("Operator %d not present. Illegal value.", operator));
         };
 
         operatorCritic.assignCredit(operator, this.getFitness() - individual.getFitness());
@@ -215,7 +210,7 @@ public class Individual extends Solution {
 
     // Memetic method
     private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
-            boolean greedy) {
+                                                   boolean greedy) {
 
         List<Integer> baseStationDayAmbulanceProportionList = this.getAllocation()
                 .getBaseStationDayAmbulanceProportionList();

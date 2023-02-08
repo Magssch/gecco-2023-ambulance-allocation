@@ -26,7 +26,7 @@ public class ParameterSearch extends Experiment {
         optimizer = switch (parameters.get("-optimizer")) {
             case "ga" -> new GeneticAlgorithm();
             case "ma" -> new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.FORWARD);
-            case "sls" -> new StochasticLocalSearch(NeighborhoodFunction.FORWARD);
+            case "sls" -> new StochasticLocalSearch(NeighborhoodFunction.LAZY);
             default -> throw new IllegalArgumentException("Unexpected value: " + parameters.get("optimizer"));
         };
 
@@ -45,9 +45,14 @@ public class ParameterSearch extends Experiment {
             Parameters.TOURNAMENT_SIZE = Integer.parseInt(params[3]);
             Parameters.CROSSOVER_PROBABILITY = Double.parseDouble(params[4]);
             Parameters.MUTATION_PROBABILITY = Double.parseDouble(params[5]);
+
             Parameters.IMPROVE_PROBABILITY = Double.parseDouble(params[6]);
             Parameters.USE_SWAP_MUTATION = Boolean.parseBoolean(params[7]);
             Parameters.USE_OPERATOR_CRITIC = Boolean.parseBoolean(params[8]);
+
+            Parameters.RESTART_PROBABILITY = Double.parseDouble(params[9]);
+            Parameters.NOISE_PROBABILITY = Double.parseDouble(params[10]);
+            Parameters.LAZY_NEIGHBOURHOOD_SIZE = Integer.parseInt(params[11]);
 
             System.err.println("Running with parameters: " + parameterConfig);
 
