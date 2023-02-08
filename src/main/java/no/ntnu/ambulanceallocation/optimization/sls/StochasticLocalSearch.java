@@ -123,13 +123,11 @@ public class StochasticLocalSearch implements Optimizer {
 
     @Override
     public String getAbbreviation() {
-        if (instanceCount.get() == 1) {
-            return "SLS";
-        }
         return switch (neighborhoodFunction) {
             case FORWARD -> "FSLS";
             case HAMMING -> "HSLS";
             case LAZY -> String.format("LazySLS_%d", neighborhoodSize);
+            default -> "SLS";
         };
     }
 
