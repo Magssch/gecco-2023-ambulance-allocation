@@ -11,6 +11,7 @@ import no.ntnu.ambulanceallocation.optimization.Optimizer;
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.optimization.ga.GeneticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
+import no.ntnu.ambulanceallocation.optimization.ma.ImproveOperator;
 import no.ntnu.ambulanceallocation.optimization.ma.MemeticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
 import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
@@ -48,7 +49,9 @@ public class ParameterSearch extends Experiment {
 
             Parameters.IMPROVE_PROBABILITY = Double.parseDouble(params[6]);
             Parameters.USE_SWAP_MUTATION = Boolean.parseBoolean(params[7]);
-            Parameters.USE_OPERATOR_CRITIC = Boolean.parseBoolean(params[8]);
+            Parameters.IMPROVE_OPERATOR = params[8].equals("operatorcritic") ? ImproveOperator.OPERATORCRITIC : null;
+            Parameters.IMPROVE_OPERATOR = params[8].equals("robinhood") ? ImproveOperator.ROBINHOOD : null;
+            Parameters.IMPROVE_OPERATOR = params[8].equals("sls") ? ImproveOperator.SLS : null;
 
             Parameters.RESTART_PROBABILITY = Double.parseDouble(params[9]);
             Parameters.NOISE_PROBABILITY = Double.parseDouble(params[10]);

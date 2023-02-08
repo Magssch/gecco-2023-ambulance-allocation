@@ -1,5 +1,12 @@
 package no.ntnu.ambulanceallocation.optimization.ga;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import no.ntnu.ambulanceallocation.Parameters;
 import no.ntnu.ambulanceallocation.optimization.Solution;
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
@@ -11,13 +18,6 @@ import no.ntnu.ambulanceallocation.simulation.BaseStation;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.utils.Tuple;
 import no.ntnu.ambulanceallocation.utils.Utils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Individual extends Solution {
 
@@ -106,8 +106,8 @@ public class Individual extends Solution {
 
     // Memetic method
     public void improve(EvolutionStrategy evolutionStrategy, NeighborhoodFunction neighborhoodFunction,
-                        int neighborhoodSize,
-                        double improveProbability) {
+            int neighborhoodSize,
+            double improveProbability) {
         if (Utils.randomDouble() < improveProbability) {
             // find the best individual in population
             switch (evolutionStrategy) {
@@ -130,22 +130,20 @@ public class Individual extends Solution {
     }
 
     private int selectImproveOperator() {
-        if (Parameters.USE_OPERATOR_CRITIC) {
-            return operatorCritic.selectNext();
-        }
-        return Utils.randomInt(NUMBER_OF_OPERATORS);
+        return operatorCritic.selectNext();
     }
 
     private Individual improve(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
+        return switch (Parameters.IMPROVE_OPERATOR) {
+            case OPERATORCRITIC -> improveWithCritic(neighborhoodFunction, neighborhoodSize);
+            case SLS -> improveWithSLS(neighborhoodFunction, neighborhoodSize);
+            case ROBINHOOD -> improveWithRobinHood();
+        };
+    }
+
+    private Individual improveWithCritic(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
         int operator = selectImproveOperator();
         Individual individual = switch (operator) {
-            // case 0 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1,
-            // Utils.randomInt(3) + 1,
-            // Utils.randomInt(3) + 1, Utils.randomInt(3) + 1, true);
-            // case 1 -> robinHoodNeighborhoodSearch(Utils.randomInt(3) + 1, -1,
-            // Utils.randomInt(3) + 1, -1, true);
-            // case 2 -> robinHoodNeighborhoodSearch(-1, Utils.randomInt(3) + 1, -1,
-            // Utils.randomInt(3) + 1, true);
             case 0 -> robinHoodTakeFirst(Utils.randomInt(2) + 1);
             case 1 -> robinHoodGiveFirst(Utils.randomInt(2) + 1);
             case 2 -> {
@@ -154,10 +152,25 @@ public class Individual extends Solution {
                 yield new Individual(bestNeighborhood);
             }
             default ->
-                    throw new IllegalStateException(String.format("Operator %d not present. Illegal value.", operator));
+                throw new IllegalStateException(String.format("Operator %d not present. Illegal value.", operator));
         };
-
         operatorCritic.assignCredit(operator, this.getFitness() - individual.getFitness());
+        return individual;
+    }
+
+    private Individual improveWithSLS(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
+        SlsSolution slsSolution = new SlsSolution(this);
+        SlsSolution bestNeighborhood = slsSolution.greedyStep(neighborhoodFunction, neighborhoodSize);
+        return new Individual(bestNeighborhood);
+    }
+
+    private Individual improveWithRobinHood() {
+        Individual individual = switch (Utils.randomInt(2)) {
+            case 0 -> robinHoodTakeFirst(Utils.randomInt(2) + 1);
+            case 1 -> robinHoodGiveFirst(Utils.randomInt(2) + 1);
+            default ->
+                throw new IllegalStateException(String.format("Operator %d not present. Illegal value."));
+        };
         return individual;
     }
 
@@ -177,6 +190,7 @@ public class Individual extends Solution {
             }
             neighborhood.add(new Individual(this, chromosomeNumber, overproportionateIndex, baseStationId));
         }
+        System.out.println(neighborhood);
         Individual bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
 
         return bestNeighbor;
@@ -203,91 +217,9 @@ public class Individual extends Solution {
                     .add(new Individual(this, chromosomeNumber, baseStationIndex,
                             underproportionateStation));
         }
+        System.out.println(neighborhood);
         Individual bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
 
         return bestNeighbor;
-    }
-
-    // Memetic method
-    private Individual robinHoodNeighborhoodSearch(int dayHighestN, int dayLowestN, int nightHighestN, int nightLowestN,
-                                                   boolean greedy) {
-
-        List<Integer> baseStationDayAmbulanceProportionList = this.getAllocation()
-                .getBaseStationDayAmbulanceProportionList();
-        List<Integer> baseStationNightAmbulanceProportionList = this.getAllocation()
-                .getBaseStationNightAmbulanceProportionList();
-
-        if (dayHighestN == -1) {
-            dayHighestN = baseStationDayAmbulanceProportionList.size();
-        }
-        if (dayLowestN == -1) {
-            dayLowestN = baseStationDayAmbulanceProportionList.size();
-        }
-        if (nightHighestN == -1) {
-            nightHighestN = baseStationNightAmbulanceProportionList.size();
-        }
-        if (nightLowestN == -1) {
-            nightLowestN = baseStationNightAmbulanceProportionList.size();
-        }
-
-        List<List<Integer>> daySubChromosomeNeighbors = new ArrayList<>();
-        daySubChromosomeNeighbors.add(this.getAllocation().getDayShiftAllocation());
-        List<List<Integer>> nightSubChromosomeNeighbors = new ArrayList<>();
-        nightSubChromosomeNeighbors.add(this.getAllocation().getNightShiftAllocation());
-
-        for (int highStation : baseStationDayAmbulanceProportionList.subList(0, dayHighestN)) {
-            for (int lowStation : baseStationDayAmbulanceProportionList.subList(
-                    baseStationDayAmbulanceProportionList.size() - dayLowestN,
-                    baseStationDayAmbulanceProportionList.size())) {
-                if (highStation == lowStation || !getAllocation().getDayShiftAllocation().contains(highStation)) {
-                    continue;
-                }
-                List<Integer> newChromosome = new ArrayList<>(getAllocation().getDayShiftAllocation());
-                newChromosome.set(newChromosome.indexOf(highStation), lowStation);
-                daySubChromosomeNeighbors.add(newChromosome);
-            }
-        }
-
-        for (int highStation : baseStationNightAmbulanceProportionList.subList(0, nightHighestN)) {
-            for (int lowStation : baseStationNightAmbulanceProportionList.subList(
-                    baseStationNightAmbulanceProportionList.size() - nightLowestN,
-                    baseStationNightAmbulanceProportionList.size())) {
-                if (highStation == lowStation || !getAllocation().getNightShiftAllocation().contains(highStation)) {
-                    continue;
-                }
-                List<Integer> newChromosome = new ArrayList<>(getAllocation().getNightShiftAllocation());
-                newChromosome.set(newChromosome.indexOf(highStation), lowStation);
-                nightSubChromosomeNeighbors.add(newChromosome);
-            }
-        }
-
-        int neighborhoodSize = daySubChromosomeNeighbors.size() * nightSubChromosomeNeighbors.size();
-
-        List<Integer> randomSubset = new ArrayList<>();
-        if (neighborhoodSize > Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE) {
-            randomSubset = Utils.random.ints(0, neighborhoodSize).distinct()
-                    .limit(Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE).boxed()
-                    .collect(Collectors.toList());
-        }
-
-        List<Individual> neighborhood = new ArrayList<>();
-        for (int i = 0; i < daySubChromosomeNeighbors.size(); i++) {
-            for (int j = 0; j < nightSubChromosomeNeighbors.size(); j++) {
-                if (neighborhoodSize <= Parameters.LOCAL_NEIGHBORHOOD_MAX_SIZE || randomSubset.contains(i * j)) {
-                    Individual neighbor = new Individual(
-                            List.of(daySubChromosomeNeighbors.get(i), nightSubChromosomeNeighbors.get(j)));
-                    if (neighbor.equals(this)) {
-                        throw new IllegalArgumentException("Neighbor is not a neighbor!");
-                    }
-                    if (greedy && neighbor.getFitness() <= this.getFitness()) {
-                        return neighbor;
-                    } else {
-                        neighborhood.add(neighbor);
-                    }
-                }
-            }
-        }
-
-        return neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
     }
 }

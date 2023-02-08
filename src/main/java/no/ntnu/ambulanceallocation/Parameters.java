@@ -5,6 +5,7 @@ import java.time.LocalTime;
 
 import no.ntnu.ambulanceallocation.optimization.initializer.Initializer;
 import no.ntnu.ambulanceallocation.optimization.initializer.Random;
+import no.ntnu.ambulanceallocation.optimization.ma.ImproveOperator;
 import no.ntnu.ambulanceallocation.simulation.DispatchPolicy;
 
 public final class Parameters {
@@ -52,6 +53,6 @@ public final class Parameters {
     public static int POPULATION_PROPORTIONATE_SEEDING_SIZE = 1;
     public static double IMPROVE_PROBABILITY = 0.1;
     public static int LOCAL_NEIGHBORHOOD_MAX_SIZE = 100;
-    public static boolean USE_OPERATOR_CRITIC = true;
+    public static ImproveOperator IMPROVE_OPERATOR = ImproveOperator.OPERATORCRITIC;
 
 }
