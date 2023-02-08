@@ -10,20 +10,20 @@ optimizer = "ma"
 
 meta_parameters = {
     "number_of_runs": 1,
-    "running_time": 4 * 60,
+    "running_time": 3 * 60,
     # "max_permutations": 2,
 }
 # 3,40,4,5,0.2,0.1,0.15,true,true
 param_grid = {
     "seeding_size": [3],
-    "population_size": [40],
+    "population_size": [30, 40],
     "elite_size": [4],
     "tournament_size": [5],
-    "crossover_probability": [0.15],
-    "mutation_probability": [0.05],
-    "improve_probability": [0.15] if optimizer == "ma" else [0.0],
+    "crossover_probability": [0.1,0.15,0.2],
+    "mutation_probability": [0.05,0.1,0.15],
+    "improve_probability": [0.05,0.1,0.15,0.2] if optimizer == "ma" else [0.0],
     "use_swap_mutation": ["true"],
-    "use_operator_critic": ["true"] if optimizer == "ma" else ["false"],
+    "use_operator_critic": ["false"] if optimizer == "ma" else ["false"],
     "restart_probability": [0.025],
     "noise_probability": [0.65],
     "lazy_neighborhood_size": [80],
