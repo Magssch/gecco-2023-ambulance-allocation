@@ -52,13 +52,13 @@ public class SecondExperiment extends Experiment {
                 Config.withinPeriod(timeInterval.first(), timeInterval.second()));
         GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(
                 Config.withinPeriod(timeInterval.first(), timeInterval.second()));
-        MemeticAlgorithm memeticAlgorithmOperatorCritic = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
-                ImproveOperator.OPERATORCRITIC,
+        MemeticAlgorithm memeticAlgorithmRobinHood = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                ImproveOperator.ROBINHOOD,
                 NeighborhoodFunction.LAZY, Config.withinPeriod(timeInterval.first(), timeInterval.second()));
 
         optimizers.add(lazyStochasticLocalSearch);
         optimizers.add(geneticAlgorithm);
-        optimizers.add(memeticAlgorithmOperatorCritic);
+        optimizers.add(memeticAlgorithmRobinHood);
         return optimizers;
     }
 
@@ -77,7 +77,11 @@ public class SecondExperiment extends Experiment {
                     runDeterministicInitializer(populationProportionate, simulations.get(simulationPeriod));
 
                     for (Optimizer optimizer : produceOptimizerList(simulations.get(simulationPeriod))) {
-                        runStochasticOptimizer(optimizer, simulationPeriod); // TODO: run with correct config
+                        runStochasticOptimizer(optimizer, simulationPeriod, simulations.get(simulationPeriod)); // TODO:
+                                                                                                                // run
+                                                                                                                // with
+                                                                                                                // correct
+                                                                                                                // config
                         Simulation.saveAllocationResults();
                     }
 
@@ -105,7 +109,8 @@ public class SecondExperiment extends Experiment {
         runs.saveColumn(name, Collections.nCopies(Parameters.RUNS, responseTimes.average()));
     }
 
-    private void runStochasticOptimizer(Optimizer optimizer, String simulationPeriod) {
+    private void runStochasticOptimizer(Optimizer optimizer, String simulationPeriod,
+            Tuple<LocalDateTime> timeInterval) {
         String optimizerName = optimizer.getAbbreviation();
         double overallBestFitness = Double.POSITIVE_INFINITY;
         Allocation overallBestAllocation = new Allocation();
@@ -128,7 +133,8 @@ public class SecondExperiment extends Experiment {
             logger.info("{} run {}/{} completed.", optimizerName, i + 1, Parameters.RUNS);
         }
 
-        ResponseTimes overallBestResponseTimes = Simulation.withDefaultConfig().simulate(overallBestAllocation);
+        ResponseTimes overallBestResponseTimes = Simulation.withinPeriod(timeInterval.first(), timeInterval.second())
+                .simulate(overallBestAllocation);
         runs.saveColumn(optimizerName, bestFitnessAtTermination);
         overallBestRunStatistics
                 .saveResults(String.format("second_experiment_%s_%s", simulationPeriod, optimizerName.toLowerCase()));
