@@ -46,9 +46,9 @@ public class ThirdExperiment extends Experiment {
             0.4,
             0.45,
             0.5,
-            0.55
-    // 0.6
-    // 0.65,
+            0.55,
+            0.6,
+            0.65
     // 0.7,
     // 0.75,
     // 0.8,
@@ -74,7 +74,8 @@ public class ThirdExperiment extends Experiment {
         Simulation.saveAllocationResults();
 
         logger.info("Testing model 'MA_lazy'");
-        Optimizer ma = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN, NeighborhoodFunction.LAZY,
+        Optimizer ma = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                NeighborhoodFunction.LAZY,
                 Parameters.LAZY_NEIGHBOURHOOD_SIZE);
         runStochasticOptimizer(ma, "MA_lazy");
         Simulation.saveAllocationResults();
@@ -177,13 +178,13 @@ public class ThirdExperiment extends Experiment {
         bestFitnessResult.saveColumn("PopulationProportionate", averageResponseTimes.get("PopProp"));
         bestFitnessResult.saveColumn("GA", averageResponseTimes.get("GA"));
         bestFitnessResult.saveColumn("MA_lazy", averageResponseTimes.get("MA_lazy"));
-        bestFitnessResult.saveResults("new_third_experiment_best_fitness");
-        responseTimes.saveResults("new_third_experiment_response_times");
-        runs.saveResults("new_third_experiment_runs");
+        bestFitnessResult.saveResults("third_experiment_best_fitness");
+        responseTimes.saveResults("third_experiment_response_times");
+        runs.saveResults("third_experiment_runs");
     }
 
     public static void main(String[] args) {
-        logger.info("Running new experiment 3 ...");
+        logger.info("Running experiment 3 ...");
         ThirdExperiment newThirdExperiment = new ThirdExperiment();
         newThirdExperiment.run();
         logger.info("Done");
