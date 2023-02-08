@@ -80,6 +80,14 @@ public class FirstExperiment extends Experiment {
 
         // Optimizers (AI methods)
         for (Optimizer optimizer : optimizers) {
+            if (optimizer.getAbbreviation().equals("HSLS")) {
+                System.out.println("Setting restart probability to 0.05");
+                Parameters.RESTART_PROBABILITY = 0.05;
+            }
+            if (optimizer.getAbbreviation().equals("LazySLS_80")) {
+                System.out.println("Setting restart probability to 0.025");
+                Parameters.RESTART_PROBABILITY = 0.025;
+            }
             runStochasticOptimizer(optimizer);
             Simulation.saveAllocationResults();
         }
