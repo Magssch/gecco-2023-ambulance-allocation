@@ -19,6 +19,7 @@ import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
 import no.ntnu.ambulanceallocation.optimization.ma.ImproveOperator;
 import no.ntnu.ambulanceallocation.optimization.ma.MemeticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
+import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
@@ -68,6 +69,11 @@ public class ThirdExperiment extends Experiment {
         logger.info("Testing model 'Population Proportionate'");
         runPopulationProportionate();
 
+        logger.info("Testing model 'LazySLS'");
+        StochasticLocalSearch lazyStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.LAZY);
+        runStochasticOptimizer(lazyStochasticLocalSearch, "LazySLS");
+        Simulation.saveAllocationResults();
+
         logger.info("Testing model 'GA'");
         Optimizer ga = new GeneticAlgorithm();
         runStochasticOptimizer(ga, "GA");
@@ -75,7 +81,7 @@ public class ThirdExperiment extends Experiment {
 
         logger.info("Testing model 'MA_lazy'");
         Optimizer ma = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
-                ImproveOperator.OPERATORCRITIC,
+                ImproveOperator.ROBINHOOD,
                 NeighborhoodFunction.LAZY);
         runStochasticOptimizer(ma, "MA_lazy");
         Simulation.saveAllocationResults();

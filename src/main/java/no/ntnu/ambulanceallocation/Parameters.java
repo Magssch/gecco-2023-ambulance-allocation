@@ -11,7 +11,7 @@ import no.ntnu.ambulanceallocation.simulation.DispatchPolicy;
 public final class Parameters {
     // General
     public static int RUNS = 15;
-    public static int MAX_RUNNING_TIME = (int) (5.0 * 60); // minutes
+    public static int MAX_RUNNING_TIME = (int) (4 * 60); // minutes
 
     // ************************ Simulation ************************
     public static final int BUFFER_SIZE = 4; // hours
@@ -41,18 +41,17 @@ public final class Parameters {
     // Genetic / Memetic Algorithm
     public static Initializer INITIALIZER = new Random();
     public static int GENERATIONS = 999;
-    public static int POPULATION_SIZE = 36;
+    public static int POPULATION_SIZE = 30;
     public static int ELITE_SIZE = 4;
     public static int TOURNAMENT_SIZE = 5;
 
-    public static double CROSSOVER_PROBABILITY = 0.2;
+    public static double CROSSOVER_PROBABILITY = 0.15;
     public static double MUTATION_PROBABILITY = 0.05;
     public static boolean USE_SWAP_MUTATION = true;
 
     // MA specific
-    public static int POPULATION_PROPORTIONATE_SEEDING_SIZE = 1;
+    public static int POPULATION_PROPORTIONATE_SEEDING_SIZE = 3;
     public static double IMPROVE_PROBABILITY = 0.1;
-    public static int LOCAL_NEIGHBORHOOD_MAX_SIZE = 100;
     public static ImproveOperator IMPROVE_OPERATOR = ImproveOperator.OPERATORCRITIC;
 
 }
