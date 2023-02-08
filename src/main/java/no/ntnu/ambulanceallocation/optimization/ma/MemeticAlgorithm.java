@@ -133,18 +133,15 @@ public class MemeticAlgorithm extends GeneticAlgorithm {
 
     @Override
     public String getAbbreviation() {
-        if (instanceCount.get() == 1) {
-            return "MA";
-        }
-
         return switch (improveOperator) {
-            case ROBINHOOD -> "FRB";
+            case ROBINHOOD -> "RBMA";
             case SLS -> switch (neighborhoodFunction) {
                 case FORWARD -> "FMA";
                 case HAMMING -> "HMA";
                 case LAZY -> String.format("MA_LazySLS_%d", neighborhoodSize);
             };
             case OPERATORCRITIC -> "OCMA";
+            default -> "MA";
         };
     }
 
