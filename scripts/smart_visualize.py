@@ -51,8 +51,7 @@ def visualize_results(experiment_files: list[str], include_allocations=False) ->
         if result_type == "response_times" and "new_third" not in result_file_name:
             visualize_geographic_response_time_distribution(
                 df,
-                get_visualization_name('geographic_distribution', experiment_name),
-                "PopulationProportionate"
+                get_visualization_name('geographic_distribution', experiment_name)
             )
 
             regular_plot(df, get_visualization_name(result_type, experiment_name))

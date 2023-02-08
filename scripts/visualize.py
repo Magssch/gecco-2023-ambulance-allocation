@@ -275,8 +275,11 @@ def combine_files(output_file_name, left_file_name, right_file_name, should_merg
     df.to_csv(f"{OUTPUT_FOLDER}/{output_file_name}.csv", index=False)
 
 
-def visualize_geographic_response_time_distribution(df: pd.DataFrame, output_file_name: str, method_name: str) -> None:
-    if method_name in df.columns:
+def visualize_geographic_response_time_distribution(df: pd.DataFrame, output_file_name: str) -> None:
+    for method_name in df.columns:
+        if method_name == "timestamp" or method_name == "coords":
+            continue
+        print(f"Creating geographic distribution for {method_name}")
         df_agg = df.groupby(["coords"]).mean(numeric_only=True).reset_index()
         grid_list = df_agg["coords"].tolist()
         cost_list = df_agg[method_name].tolist()
@@ -288,13 +291,13 @@ def visualize_geographic_response_time_distribution(df: pd.DataFrame, output_fil
         ]
         geojson_tools.export_features(features, "data/grid.geojson")
 
-        heatmap = map_tools.get_map(height=450, width=380)
+        heatmap = map_tools.get_map(height=450, width=380, location=[59.85, 11.37])
 
         geojson = map_tools.get_geojson_items("data/grid.geojson", styles.get_dynamic_heatmap_style(max(cost_list)))
         geojson.add_to(heatmap)
 
         file_name = f'{output_file_name}_{method_name}'.lower()
-        map_tools.export_map_with_chrome(heatmap, file_name, height=450, width=380)
+        map_tools.export_map_with_chrome(heatmap, file_name, height=700, width=530)
 
 
 def load_grid_zones() -> pd.DataFrame:

@@ -1,5 +1,6 @@
 import json
 
+import geojson
 import geojson_tools
 import map_tools
 import pandas as pd
@@ -29,12 +30,28 @@ def main():
     ]
     geojson_tools.export_features(features, "data/grid.geojson")
 
-    heatmap = map_tools.get_map(height=500, width=500)
+    heatmap = map_tools.get_map(height=460, width=300, location=[59.95, 11.035])
+
+
+    # base_stations = pd.read_csv('data/base_stations.csv', index_col=0, usecols=['id', 'easting', 'northing'])
+
+    # hospitals = pd.read_csv('data/hospital_coordinates.csv', usecols=['lat', 'long']).iterrows()
 
     geojson = map_tools.get_geojson_items(
         "data/grid.geojson", styles.get_dynamic_heatmap_style(max(cost_list))
     )
     geojson.add_to(heatmap)
+
+    # points = [geojson.Feature(geometry=geojson.Point(coordinates.to_list()[::-1])) for _, coordinates in hospitals]
+    # markers = [map_tools._point_to_circle_marker(point, radius=1, color="red") for point in points]
+    # for marker in markers:
+    #     marker.add_to(heatmap)
+
+    # points = geojson_tools.dataframe_to_points(base_stations)
+    # markers = [map_tools._point_to_text_marker(point, "▲") for point in points]
+    # for marker in markers:
+    #     marker.add_to(heatmap)
+
 
     # Plot Ullevaal location
     points = [geojson_tools.centroid_to_geojson(261774, 6652003)]
@@ -42,7 +59,7 @@ def main():
     circle_marker.add_to(heatmap)
 
     map_tools.export_map_with_chrome(
-        heatmap, "ullevaal_distances", height=1000, width=1000
+        heatmap, "ullevaal_distances", height=840, width=600
     )
 
 

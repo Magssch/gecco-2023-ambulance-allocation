@@ -1,7 +1,6 @@
-import pandas as pd
-
 import geojson_tools
 import map_tools
+import pandas as pd
 import styles
 
 
@@ -26,8 +25,8 @@ def main():
     features = geojson_tools.dataframe_to_squares(grids)
     geojson_tools.export_features(features, 'data/grid.geojson')
 
-    heatmap = map_tools.get_map()
-
+    heatmap = map_tools.get_map(height=450, width=380, location=[59.85, 11.37])
+    
     geojson = map_tools.get_geojson_items('data/grid.geojson', styles.zone_styles)
     geojson.add_to(heatmap)
 
@@ -36,7 +35,7 @@ def main():
     for circle_marker in circle_markers:
         circle_marker.add_to(heatmap)
 
-    map_tools.export_map_with_chrome(heatmap, "grid_zones")
+    map_tools.export_map_with_chrome(heatmap, "grid_zones", height=700, width=530)
 
 
 if __name__ == '__main__':

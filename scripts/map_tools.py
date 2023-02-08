@@ -5,14 +5,13 @@ import time
 from collections import Counter
 from pathlib import Path
 
-import PIL.Image
 import folium
+import PIL.Image
+from common import VISUALIZATION_FOLDER
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-
-from common import VISUALIZATION_FOLDER
 from styles import allocation_coloring
+from webdriver_manager.chrome import ChromeDriverManager
 
 MAP_WIDTH = 400
 MAP_HEIGHT = 800
@@ -64,7 +63,7 @@ def _point_to_text_marker(point, text) -> folium.Marker:
         location=point["geometry"]["coordinates"][::-1],
         icon=folium.DivIcon(
             icon_size=(100, 100),
-            icon_anchor=(3, 9),
+            icon_anchor=(5, 8),
             html=text,
         ),
     )
