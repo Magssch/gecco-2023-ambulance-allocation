@@ -50,16 +50,16 @@ public class FirstExperiment extends Experiment {
         MemeticAlgorithm memeticAlgorithmRobinHood = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
                 ImproveOperator.ROBINHOOD,
                 NeighborhoodFunction.LAZY);
-        MemeticAlgorithm memeticAlgorithmOperatorCritic = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
-                ImproveOperator.OPERATORCRITIC,
-                NeighborhoodFunction.LAZY);
+        // MemeticAlgorithm memeticAlgorithmOperatorCritic = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+        //         ImproveOperator.OPERATORCRITIC,
+        //         NeighborhoodFunction.LAZY);
 
         optimizers.add(hammingStochasticLocalSearch);
         optimizers.add(lazyStochasticLocalSearch);
         optimizers.add(geneticAlgorithm);
         optimizers.add(memeticAlgorithmSLS);
         optimizers.add(memeticAlgorithmRobinHood);
-        optimizers.add(memeticAlgorithmOperatorCritic);
+        // optimizers.add(memeticAlgorithmOperatorCritic);
     }
 
     @Override

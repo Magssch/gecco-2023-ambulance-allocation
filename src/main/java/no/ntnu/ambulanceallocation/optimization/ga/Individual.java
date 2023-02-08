@@ -195,7 +195,6 @@ public class Individual extends Solution {
             }
             neighborhood.add(new Individual(this, chromosomeNumber, overproportionateIndex, baseStationId));
         }
-        System.out.println(neighborhood);
         Individual bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
 
         return bestNeighbor;
@@ -222,7 +221,6 @@ public class Individual extends Solution {
                     .add(new Individual(this, chromosomeNumber, baseStationIndex,
                             underproportionateStation));
         }
-        System.out.println(neighborhood);
         Individual bestNeighbor = neighborhood.stream().min(Comparator.comparingDouble(Individual::getFitness)).get();
 
         return bestNeighbor;
