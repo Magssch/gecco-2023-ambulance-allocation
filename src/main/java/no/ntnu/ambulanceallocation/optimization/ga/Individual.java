@@ -149,8 +149,8 @@ public class Individual extends Solution {
     private Individual improveWithCritic(NeighborhoodFunction neighborhoodFunction, int neighborhoodSize) {
         int operator = selectImproveOperator();
         Individual individual = switch (operator) {
-            case 0 -> robinHoodTakeFirst(Utils.randomInt(2) + 1);
-            case 1 -> robinHoodGiveFirst(Utils.randomInt(2) + 1);
+            case 0 -> robinHoodTakeFirst(Utils.randomInt(3));
+            case 1 -> robinHoodGiveFirst(Utils.randomInt(3));
             case 2 -> {
                 SlsSolution slsSolution = new SlsSolution(this);
                 SlsSolution bestNeighborhood = slsSolution.greedyStep(neighborhoodFunction, neighborhoodSize);
@@ -171,8 +171,8 @@ public class Individual extends Solution {
 
     private Individual improveWithRobinHood() {
         Individual individual = switch (Utils.randomInt(2)) {
-            case 0 -> robinHoodTakeFirst(Utils.randomInt(2) + 1);
-            case 1 -> robinHoodGiveFirst(Utils.randomInt(2) + 1);
+            case 0 -> robinHoodTakeFirst(Utils.randomInt(3));
+            case 1 -> robinHoodGiveFirst(Utils.randomInt(3));
             default ->
                 throw new IllegalStateException(String.format("Operator %d not present. Illegal value."));
         };

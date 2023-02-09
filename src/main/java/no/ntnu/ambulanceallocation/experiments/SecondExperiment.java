@@ -55,12 +55,16 @@ public class SecondExperiment extends Experiment {
                 Config.withinPeriod(timeInterval.first(), timeInterval.second()));
         GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(
                 Config.withinPeriod(timeInterval.first(), timeInterval.second()));
+        MemeticAlgorithm memeticAlgorithmSLS = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                ImproveOperator.SLS,
+                NeighborhoodFunction.LAZY, Config.withinPeriod(timeInterval.first(), timeInterval.second()));
         MemeticAlgorithm memeticAlgorithmRobinHood = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
                 ImproveOperator.ROBINHOOD,
                 NeighborhoodFunction.LAZY, Config.withinPeriod(timeInterval.first(), timeInterval.second()));
 
         optimizers.add(lazyStochasticLocalSearch);
         optimizers.add(geneticAlgorithm);
+        optimizers.add(memeticAlgorithmSLS);
         optimizers.add(memeticAlgorithmRobinHood);
         return optimizers;
     }

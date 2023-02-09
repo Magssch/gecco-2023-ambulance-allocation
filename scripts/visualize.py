@@ -419,24 +419,28 @@ def visualize_first_experiment(include_allocations=False) -> None:
 
 
 def visualize_third_experiment():
-    print("Visualizing fourth experiment data...")
+    print("Visualizing third experiment data...")
 
-    ensure_folder_exists(f"{VISUALIZATION_FOLDER}/fourth_experiment")
-    file = f"{SIMULATION_FOLDER}/new_third_experiment_best_fitness.csv"
-    df = pd.read_csv(file)
-    df.set_index("ratio", inplace=True)
-    index_plot(
-        df,
-        "fourth_experiment/average_response_times_ratio_log",
-        title="Average response times",
-        xlabel="Ratio of ambulances",
-        ylabel="average response time / (s)",
-        log_scale=True,
-    )
+    ensure_folder_exists(f"{VISUALIZATION_FOLDER}/third_experiment")
+    file = f"{SIMULATION_FOLDER}/third_experiment_runs.csv"
+    df = pd.read_csv(file).drop(columns=["run"])
+    grouping = df.groupby("ratio")
+    df_std = grouping.std()
+    df_median = grouping.median()
+    print(df_std)
+    print(df_median)
+    # index_plot(
+    #     df,
+    #     "fourth_experiment/average_response_times_ratio_log",
+    #     title="Average response times",
+    #     xlabel="Ratio of ambulances",
+    #     ylabel="average response time / (s)",
+    #     log_scale=True,
+    # )
 
     index_plot(
-        df,
-        "fourth_experiment/average_response_times_ratio",
+        df_median,
+        "third_experiment/average_response_times_ratio",
         title="Average response times",
         xlabel="Ratio of ambulances",
         ylabel="average response time / (s)",

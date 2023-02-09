@@ -19,7 +19,6 @@ import no.ntnu.ambulanceallocation.optimization.ma.EvolutionStrategy;
 import no.ntnu.ambulanceallocation.optimization.ma.ImproveOperator;
 import no.ntnu.ambulanceallocation.optimization.ma.MemeticAlgorithm;
 import no.ntnu.ambulanceallocation.optimization.sls.NeighborhoodFunction;
-import no.ntnu.ambulanceallocation.optimization.sls.StochasticLocalSearch;
 import no.ntnu.ambulanceallocation.simulation.Config;
 import no.ntnu.ambulanceallocation.simulation.ResponseTimes;
 import no.ntnu.ambulanceallocation.simulation.Simulation;
@@ -32,24 +31,17 @@ public class ThirdExperiment extends Experiment {
     private static final PopulationProportionate populationProportionate = new PopulationProportionate();
 
     private final List<Double> ratioList = List.of(
-            // 0.1,
-            // 0.15,
-            // 0.2,
-            // 0.25,
-            // 0.3,
-            // 0.35,
-            0.4,
+            0.2,
             0.45,
+            0.475,
             0.5,
+            0.525,
             0.55,
+            0.575,
             0.6,
-            0.65
-    // 0.7,
-    // 0.75,
-    // 0.8,
-    // 0.85,
-    // 0.9
-    );
+            0.625,
+            0.65,
+            0.8);
 
     @Override
     public void run() {
@@ -60,17 +52,18 @@ public class ThirdExperiment extends Experiment {
                 .collect(Collectors.toList()));
 
         runs.saveColumn("run",
-                Collections.nCopies(ratioList.size(),
-                        List.of(IntStream.rangeClosed(1, Parameters.RUNS + 1)
-                                .boxed().collect(Collectors.toList()))));
+                Collections.nCopies(ratioList.size(), IntStream.rangeClosed(1, Parameters.RUNS)
+                        .boxed().collect(Collectors.toList())).stream().flatMap(List::stream)
+                        .toList());
 
         logger.info("Testing model 'Population Proportionate'");
         runPopulationProportionate();
 
-        logger.info("Testing model 'LazySLS'");
-        StochasticLocalSearch lazyStochasticLocalSearch = new StochasticLocalSearch(NeighborhoodFunction.LAZY);
-        runStochasticOptimizer(lazyStochasticLocalSearch, "LazySLS");
-        Simulation.saveAllocationResults();
+        // logger.info("Testing model 'LazySLS'");
+        // StochasticLocalSearch lazyStochasticLocalSearch = new
+        // StochasticLocalSearch(NeighborhoodFunction.LAZY);
+        // runStochasticOptimizer(lazyStochasticLocalSearch, "LazySLS");
+        // Simulation.saveAllocationResults();
 
         logger.info("Testing model 'GA'");
         Optimizer ga = new GeneticAlgorithm();
@@ -78,16 +71,24 @@ public class ThirdExperiment extends Experiment {
         Simulation.saveAllocationResults();
 
         logger.info("Testing model 'MA_lazy'");
-        Optimizer ma = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+        Optimizer slsma = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
+                ImproveOperator.SLS,
+                NeighborhoodFunction.LAZY);
+        runStochasticOptimizer(slsma, "MA_lazy");
+        Simulation.saveAllocationResults();
+
+        logger.info("Testing model 'RHMA'");
+        Optimizer rhma = new MemeticAlgorithm(EvolutionStrategy.LAMARCKIAN,
                 ImproveOperator.ROBINHOOD,
                 NeighborhoodFunction.LAZY);
-        runStochasticOptimizer(ma, "MA_lazy");
+        runStochasticOptimizer(rhma, "MA_lazy");
         Simulation.saveAllocationResults();
     }
 
     private void runPopulationProportionate() {
         logger.info("Testing model '{}'", "PopulationProportionate");
-        final int totalNumAmbulances = Parameters.NUMBER_OF_AMBULANCES_DAY + Parameters.NUMBER_OF_AMBULANCES_NIGHT;
+        final int totalNumAmbulances = Parameters.NUMBER_OF_AMBULANCES_DAY
+                + Parameters.NUMBER_OF_AMBULANCES_NIGHT;
         List<Double> fitness = new ArrayList<>();
 
         for (double ambulanceRatio : ratioList) {
@@ -95,15 +96,16 @@ public class ThirdExperiment extends Experiment {
             int numNightAmbulances = (int) Math
                     .round(totalNumAmbulances * (1 - ambulanceRatio));
 
-            logger.info("Running PopulationProportionate with {} day ambulances and {} night ambulances",
+            logger.info("Running PopulationProportionate with {} day ambulances and {} night ambulances (ratio {})",
                     numDayAmbulances,
-                    numNightAmbulances);
+                    numNightAmbulances, ambulanceRatio);
 
             Allocation allocation = new Allocation(List.of(
                     populationProportionate.initialize(numDayAmbulances),
                     populationProportionate.initialize(numNightAmbulances)));
             ResponseTimes results = Simulation
-                    .withConfig(Config.withNumAmbulances(numDayAmbulances, numNightAmbulances)).simulate(allocation);
+                    .withConfig(Config.withNumAmbulances(numDayAmbulances, numNightAmbulances))
+                    .simulate(allocation);
 
             fitness.addAll(Collections.nCopies(Parameters.RUNS, results.average()));
         }
@@ -113,7 +115,8 @@ public class ThirdExperiment extends Experiment {
 
     private void runStochasticOptimizer(Optimizer optimizer, String name) {
         logger.info("Testing model '{}'", name);
-        final int totalNumAmbulances = Parameters.NUMBER_OF_AMBULANCES_DAY + Parameters.NUMBER_OF_AMBULANCES_NIGHT;
+        final int totalNumAmbulances = Parameters.NUMBER_OF_AMBULANCES_DAY
+                + Parameters.NUMBER_OF_AMBULANCES_NIGHT;
         List<Double> bestFitnessAtTermination = new ArrayList<>();
 
         for (double ambulanceRatio : ratioList) {
@@ -123,9 +126,9 @@ public class ThirdExperiment extends Experiment {
             Parameters.NUMBER_OF_AMBULANCES_DAY = numDayAmbulances;
             Parameters.NUMBER_OF_AMBULANCES_NIGHT = numNightAmbulances;
 
-            logger.info("Running optimizations with {} day ambulances and {} night ambulances",
+            logger.info("Running optimizations with {} day ambulances and {} night ambulances (ratio {})",
                     numDayAmbulances,
-                    numNightAmbulances);
+                    numNightAmbulances, ambulanceRatio);
 
             for (int i = 0; i < Parameters.RUNS; i++) {
                 logger.info("Starting {}... run {}/{}", name, i + 1, Parameters.RUNS);

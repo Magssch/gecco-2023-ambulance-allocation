@@ -11,7 +11,12 @@ from visualize import (allocation_plot, plot_box_plot, regular_plot,
 
 
 def split_result_name(result_name: str) -> tuple[str, str]:
-    index = result_name.index("experiment") + len("experiment")
+    experiment_anchor = "experiment"
+    if "busy" in result_name:
+        experiment_anchor = "experiment_busy"
+    if "quiet" in result_name:
+        experiment_anchor = "experiment_quiet"
+    index = result_name.index(experiment_anchor) + len(experiment_anchor)
     experiment_name = result_name[:index]
     result_type = result_name[index + 1:]
     return experiment_name, result_type
@@ -49,10 +54,10 @@ def visualize_results(experiment_files: list[str], include_allocations=False) ->
         df = pd.read_csv(result_path)
 
         if result_type == "response_times" and "new_third" not in result_file_name:
-            visualize_geographic_response_time_distribution(
-                df,
-                get_visualization_name('geographic_distribution', experiment_name)
-            )
+            # visualize_geographic_response_time_distribution(
+            #     df,
+            #     get_visualization_name('geographic_distribution', experiment_name)
+            # )
 
             regular_plot(df, get_visualization_name(result_type, experiment_name))
             regular_plot(df, get_visualization_name(result_type, experiment_name, "log"), log_scale=True)
@@ -68,7 +73,7 @@ def visualize_results(experiment_files: list[str], include_allocations=False) ->
         elif result_type == "runs":
             plot_box_plot(df, get_visualization_name(result_type, experiment_name))
             save_statistics(df, get_visualization_name(experiment_name, suffix="run_statistics"))
-        elif "sls" in result_type:
+        elif "sls" in result_type and "ma_lazysls" not in result_type:
             visualize_sls_run(df, get_visualization_name(result_type, experiment_name))
         elif "ga" in result_type or "ma" in result_type:
             visualize_ga_run(df, get_visualization_name(result_type, experiment_name))
