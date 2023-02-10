@@ -35,7 +35,7 @@ public class SecondExperiment extends Experiment {
 
     private final Map<String, Tuple<LocalDateTime>> simulations = Map.of(
             "quiet", // Week 28
-            new Tuple<>(LocalDateTime.of(2018, 6, 9, 0, 0, 0), LocalDateTime.of(2018, 6, 16, 0, 0, 0)),
+            new Tuple<>(LocalDateTime.of(2018, 7, 9, 0, 0, 0), LocalDateTime.of(2018, 7, 16, 0, 0, 0)),
             // "average", // Week 2
             // new Tuple<>(LocalDateTime.of(2018, 1, 8, 0, 0, 0), LocalDateTime.of(2018, 1,
             // 15, 0, 0, 0)),
