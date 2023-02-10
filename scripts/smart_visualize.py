@@ -7,7 +7,7 @@ from save_statistics import save_aggregated_allocations, save_statistics
 from visualize import (allocation_plot, plot_box_plot, regular_plot,
                        sorted_plot, visualize_ga_run,
                        visualize_geographic_response_time_distribution,
-                       visualize_sls_run, visualize_third_experiment)
+                       visualize_sls_run)
 
 
 def split_result_name(result_name: str) -> tuple[str, str]:
@@ -84,7 +84,6 @@ def visualize_results(experiment_files: list[str], include_allocations=False) ->
 def main():
     experiment_files = collect_experiment_files()
     visualize_results(experiment_files, include_allocations=False)
-    visualize_third_experiment()
 
 
 if __name__ == '__main__':

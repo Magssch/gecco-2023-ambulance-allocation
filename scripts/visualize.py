@@ -7,6 +7,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import styles
 from common import (OUTPUT_FOLDER, SIMULATION_FOLDER, VISUALIZATION_FOLDER,
                     ensure_folder_exists)
@@ -202,8 +203,12 @@ def plot_box_plot(df: pd.DataFrame, output_file_name: str) -> None:
             column_with_space = '- \n'.join(tokens)
             df = df.rename(columns={column: column_with_space})
 
-    fig, ax = plt.subplots(figsize=(10, 7))
-    ax = df.boxplot()
+    _, ax = plt.subplots(figsize=(10, 7))
+
+    if "week" in df.columns:
+        ax = sns.boxplot(data=df, x="algorithm", y="response_time", hue="week", ax=ax)
+    else:
+        ax = df.boxplot()
 
     ax.set_title('Performance of algorithms')
     ax.set_xlabel('algorithm')
@@ -479,7 +484,7 @@ def configure_matplotlib() -> None:
 def main() -> None:
     configure_matplotlib()
 
-    visualize_first_experiment(include_allocations=False)
+    # visualize_first_experiment(include_allocations=False)
     # visualize_third_experiment()
     # visualize_fourth_experiment()
 
