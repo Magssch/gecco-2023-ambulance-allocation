@@ -4,8 +4,8 @@ import pandas as pd
 from common import (SIMULATION_FOLDER, VISUALIZATION_FOLDER,
                     ensure_folder_exists)
 from save_statistics import save_aggregated_allocations, save_statistics
-from visualize import (allocation_plot, plot_box_plot, regular_plot,
-                       sorted_plot, visualize_ga_run,
+from visualize import (allocation_plot, configure_matplotlib, plot_box_plot,
+                       regular_plot, sorted_plot, visualize_ga_run,
                        visualize_geographic_response_time_distribution,
                        visualize_sls_run)
 
@@ -83,6 +83,7 @@ def visualize_results(experiment_files: list[str], include_allocations=False) ->
 
 def main():
     experiment_files = collect_experiment_files()
+    configure_matplotlib()
     visualize_results(experiment_files, include_allocations=False)
 
 
