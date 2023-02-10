@@ -34,9 +34,9 @@ public class SecondExperiment extends Experiment {
     private static final Logger logger = LoggerFactory.getLogger(SecondExperiment.class);
 
     private final Map<String, Tuple<LocalDateTime>> simulations = Map.of(
-            "quiet", // Week 2
+            "quiet", // Week 28
             new Tuple<>(LocalDateTime.of(2018, 6, 9, 0, 0, 0), LocalDateTime.of(2018, 6, 16, 0, 0, 0)),
-            // "average", // Week 28
+            // "average", // Week 2
             // new Tuple<>(LocalDateTime.of(2018, 1, 8, 0, 0, 0), LocalDateTime.of(2018, 1,
             // 15, 0, 0, 0)),
             "busy", // Week 52
@@ -142,8 +142,8 @@ public class SecondExperiment extends Experiment {
 
     private void getTimeEstimate() {
         int extraTime = 3;
-        int optimizers = 3;
-        int durationInMinutes = Parameters.RUNS * optimizers * Parameters.MAX_RUNNING_TIME / 60 + extraTime;
+        int optimizers = 4;
+        int durationInMinutes = 2 * Parameters.RUNS * optimizers * Parameters.MAX_RUNNING_TIME / 60 + extraTime;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         String estimatedTimeOfCompletion = LocalDateTime.now().plus(Duration.of(durationInMinutes, ChronoUnit.MINUTES))
                 .format(formatter);
@@ -155,6 +155,7 @@ public class SecondExperiment extends Experiment {
     public static void main(String[] args) {
         logger.info("Running experiment 2 ...");
         SecondExperiment secondExperiment = new SecondExperiment();
+        secondExperiment.getTimeEstimate();
         secondExperiment.run();
         logger.info("Done");
 
