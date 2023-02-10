@@ -210,9 +210,9 @@ def plot_box_plot(df: pd.DataFrame, output_file_name: str) -> None:
     else:
         ax = df.boxplot()
 
-    ax.set_title('Performance of algorithms')
-    ax.set_xlabel('algorithm')
-    ax.set_ylabel('average response time / (s)')
+    ax.set_title('Performance of algorithms', fontsize=17)
+    ax.set_xlabel('Algorithm', fontsize=17)
+    ax.set_ylabel('Average response time / (s)', fontsize=17)
 
     plt.savefig(f'{VISUALIZATION_FOLDER}/{output_file_name}{FILE_EXTENSION}')
     plt.close()
