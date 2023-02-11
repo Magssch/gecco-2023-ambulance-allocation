@@ -206,10 +206,13 @@ def plot_box_plot(df: pd.DataFrame, output_file_name: str) -> None:
     _, ax = plt.subplots(figsize=(10, 7))
 
     if "week" in df.columns:
-        ax = sns.boxplot(data=df, x="algorithm", y="response_time", hue="week", ax=ax)
+        palette = {28: "limegreen", 2: "gold", 52: "r"}
+        ax = sns.boxplot(data=df, x="algorithm", y="response_time", hue="week",
+                         palette=palette, hue_order=[28, 2, 52], ax=ax)
     else:
         ax = df.boxplot()
 
+    ax.yaxis.grid(True)
     ax.set_title('Performance of algorithms', fontsize=17)
     ax.set_xlabel('Algorithm', fontsize=17)
     ax.set_ylabel('Average response time / (s)', fontsize=17)
@@ -469,7 +472,7 @@ def visualize_third_experiment():
 
 
 def configure_matplotlib() -> None:
-    font = {"family": "serif", "size": 14}
+    font = {"family": "serif", "size": 20}
     figure = {
         "autolayout": True,
     }
